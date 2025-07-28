@@ -1,9 +1,10 @@
 ﻿using EMS.Services; // Or your actual namespace where IEmailService is
+using EMS.ViewModels;
 using EMS.Web.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace EMS.Controllers
 {
@@ -36,10 +37,30 @@ namespace EMS.Controllers
         //    return Ok("✅ Test email sent successfully.");
         //}
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var employees = _context.Employees.ToList();
-            return View(employees);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var employee = await _context.Employees
+                .Include(e => e.Department)
+                .FirstOrDefaultAsync(e => e.UserId == userId);
+
+            if (employee == null)
+            {
+                return NotFound("Employee not found for current user.");
+            }
+
+            var viewModel = new EmployeeProfileViewModel
+            {
+                Employee = employee,
+            };
+
+            return View(viewModel);
         }
 
         // GET: /Manager/ApproveList

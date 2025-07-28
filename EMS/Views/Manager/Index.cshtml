@@ -1,19 +1,46 @@
-﻿@using EMS.Web.Models
-@using Microsoft.AspNetCore.Identity
-@inject UserManager<Users> UserManager
-@inject SignInManager<Users> SignInManager
+﻿@model EMS.ViewModels.EmployeeProfileViewModel
 
-@functions {
-    public Users CurrentUser => UserManager.GetUserAsync(User).GetAwaiter().GetResult();
+@{
+    ViewData["Title"] = "My Profile";
 }
 
-@if (CurrentUser != null)
-{
-    <div>
-        <strong>Hello, @CurrentUser.FullName</strong><br />
-        Email: @CurrentUser.Email<br />
-        Phone: @CurrentUser.PhoneNumber<br />
-        @* Role: @CurrentUser.Role<br />
-        Emp ID: @CurrentUser.EmployeeId *@
-    </div>
-}
+<div class="data-section">
+    <h2 class="data-title">Manager Profile</h2>
+
+    <table class="data-table">
+        <tbody>
+            <tr>
+                <th>Full Name</th>
+                <td>@Model.Employee.FullName</td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td>@Model.Employee.Email</td>
+            </tr>
+            <tr>
+                <th>Phone</th>
+                <td>@Model.Employee.PhoneNumber</td>
+            </tr>
+            <tr>
+                <th>Role</th>
+                <td>@Model.Employee.Role</td>
+            </tr>
+            <tr>
+                <th>Department</th>
+                <td>@Model.Employee.Department?.DepartmentName</td>
+            </tr>
+            <tr>
+                <th>Leave Balance</th>
+                <td>@Model.Employee.LeaveBalance</td>
+            </tr>
+            <tr>
+                <th>Status</th>
+                <td>
+                    <span class="data-status @(Model.Employee.IsActive ? "approved" : "rejected")">
+                        @(Model.Employee.IsActive ? "Active" : "Inactive")
+                    </span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

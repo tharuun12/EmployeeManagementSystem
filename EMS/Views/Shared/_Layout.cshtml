@@ -114,10 +114,13 @@
                             @if (User.IsInRole("Manager"))
                             {
                                 <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Manager" asp-action="Index">Profile</a>
+                                </li>
+                                <li class="nav-item">
                                     <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Employee" >Employees</a>
+                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="EmployeeList">Employees</a>
                                 </li>
                                 @* <li class="nav-item">
                                     <a class="nav-link text-dark" asp-controller="Departments" asp-action="Index">Departments</a>

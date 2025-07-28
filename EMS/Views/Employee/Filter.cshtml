@@ -10,10 +10,10 @@
     <h2 class="filter-title">Filter Employees</h2>
 
     <form method="get" asp-action="Filter" asp-controller="Employee" class="filter-form">
-        <div class="row">
-            <div class="col-md-4 mb-3">
+        <div class="row g-3">
+            <div class="col-md-4">
                 <label for="departmentId" class="form-label">Department</label>
-                <select name="departmentId" class="form-control">
+                <select id="departmentId" name="departmentId" class="form-select">
                     <option value="">-- All Departments --</option>
                     @foreach (var dept in departments)
                     {
@@ -21,9 +21,10 @@
                     }
                 </select>
             </div>
-            <div class="col-md-4 mb-3">
+
+            <div class="col-md-4">
                 <label for="role" class="form-label">Role</label>
-                <select name="role" class="form-control">
+                <select id="role" name="role" class="form-select">
                     <option value="">-- All Roles --</option>
                     @foreach (var r in roles)
                     {
@@ -31,35 +32,44 @@
                     }
                 </select>
             </div>
-            <div class="col-md-4 d-flex align-items-end mb-3">
+
+            <div class="col-md-4 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary w-100">Apply Filter</button>
             </div>
         </div>
     </form>
 
+
     <hr class="separator" />
 
-    <table class="table table-bordered table-striped employee-filter-table mt-3">
-        <thead class="table-header">
-            <tr>
-                <th>Full Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Department</th>
-                <th>Role</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var emp in Model)
-            {
+    @if (Model != null && Model.Count > 0)
+    {
+        <table class="data-table">
+            <thead>
                 <tr>
-                    <td>@emp.FullName</td>
-                    <td>@emp.Email</td>
-                    <td>@emp.PhoneNumber</td>
-                    <td>@emp.Department?.DepartmentName</td>
-                    <td>@emp.Role</td>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Department</th>
+                    <th>Role</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var emp in Model)
+                {
+                    <tr>
+                        <td>@emp.FullName</td>
+                        <td>@emp.Email</td>
+                        <td>@emp.PhoneNumber</td>
+                        <td>@emp.Department?.DepartmentName</td>
+                        <td>@emp.Role</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="data-empty">No employees found for the selected filters.</div>
+    }
 </div>

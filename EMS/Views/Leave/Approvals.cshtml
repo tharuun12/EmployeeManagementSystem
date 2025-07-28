@@ -1,21 +1,37 @@
 ﻿@model EMS.Models.LeaveRequest
 
-<div class="leave-review-page">
-    <h2 class="review-heading">Review Leave Request</h2>
+<div class="create-form">
+    <h2 class="form-title">Review Leave Request</h2>
 
     <div class="review-details">
-        <p><strong>Employee:</strong> @Model.Employee?.FullName</p>
-        <p><strong>Start Date:</strong> @Model.StartDate.ToShortDateString()</p>
-        <p><strong>End Date:</strong> @Model.EndDate.ToShortDateString()</p>
-        <p><strong>Reason:</strong> @Model.Reason</p>
+        <div class="form-group">
+            <label class="form-label">Employee</label>
+            <div class="form-value">@Model.Employee?.FullName</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Start Date</label>
+            <div class="form-value">@Model.StartDate.ToShortDateString()</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">End Date</label>
+            <div class="form-value">@Model.EndDate.ToShortDateString()</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Reason</label>
+            <div class="form-value">@Model.Reason</div>
+        </div>
     </div>
 
-    <form asp-action="Approvals" method="post" class="review-form">
+    <form asp-action="Approvals" method="post">
         <input type="hidden" asp-for="LeaveRequestId" />
-        <div class="review-actions">
-            <button type="submit" name="status" value="Approved" class="btn btn-outline-success approve-btn">Approve</button>
-            <button type="submit" name="status" value="Rejected" class="btn btn-outline-danger reject-btn">Reject</button>
-            <a asp-action="ApproveList" class="btn btn-outline-secondary cancel-btn">Cancel</a>
+
+        <div class="form-actions">
+            <button type="submit" name="status" value="Approved" class="btn-approve">Approve</button>
+            <button type="submit" name="status" value="Rejected" class="btn-reject">Reject</button>
+            <a asp-action="ApproveList" class="btn-cancel">Cancel</a>
         </div>
     </form>
 </div>

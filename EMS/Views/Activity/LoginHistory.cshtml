@@ -4,30 +4,39 @@
     ViewData["Title"] = "Login History";
 }
 
-<h2>Login History</h2>
+<div class="data-section">
+    <h2 class="data-title">Login History</h2>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Email New</th>
-            <th>Login Time</th>
-            <th>Logout Time</th>
-            <th>IP Address</th>
-            <th>Successful?</th>
-            <th>Session Duration</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var log in Model)
-        {
-            <tr>
-                <td>@log.Email</td>
-                <td>@log.LoginTime.ToString("g")</td>
-                <td>@(log.LogoutTime?.ToString("g") ?? "N/A")</td>
-                <td>@log.IpAddress</td>
-                <td>@(log.IsSuccessful ? "Yes" : "No")</td>
-                <td>@(log.SessionDuration?.ToString(@"hh\:mm\:ss") ?? "Still Logged In")</td>
-            </tr>
-        }
-    </tbody>
-</table>
+    @if (Model != null && Model.Any())
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Login Time</th>
+                    <th>Logout Time</th>
+                    <th>IP Address</th>
+                    <th>Successful?</th>
+                    <th>Session Duration</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in Model)
+                {
+                    <tr>
+                        <td>@log.Email</td>
+                        <td>@log.LoginTime.ToString("g")</td>
+                        <td>@(log.LogoutTime?.ToString("g") ?? "N/A")</td>
+                        <td>@log.IpAddress</td>
+                        <td>@(log.IsSuccessful ? "Yes" : "No")</td>
+                        <td>@(log.SessionDuration?.ToString(@"hh\:mm\:ss") ?? "Still Logged In")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="data-empty">No login records found.</div>
+    }
+</div>
