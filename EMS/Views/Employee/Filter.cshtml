@@ -1,0 +1,65 @@
+﻿@model List<EMS.Models.Employee>
+
+@{
+    ViewData["Title"] = "Filter Employees";
+    var departments = ViewBag.Departments as List<EMS.Models.Department>;
+    var roles = ViewBag.Roles as List<string>;
+}
+
+<div class="employee-filter-page">
+    <h2 class="filter-title">Filter Employees</h2>
+
+    <form method="get" asp-action="Filter" asp-controller="Employee" class="filter-form">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="departmentId" class="form-label">Department</label>
+                <select name="departmentId" class="form-control">
+                    <option value="">-- All Departments --</option>
+                    @foreach (var dept in departments)
+                    {
+                        <option value="@dept.DepartmentId">@dept.DepartmentName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="role" class="form-label">Role</label>
+                <select name="role" class="form-control">
+                    <option value="">-- All Roles --</option>
+                    @foreach (var r in roles)
+                    {
+                        <option value="@r">@r</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end mb-3">
+                <button type="submit" class="btn btn-primary w-100">Apply Filter</button>
+            </div>
+        </div>
+    </form>
+
+    <hr class="separator" />
+
+    <table class="table table-bordered table-striped employee-filter-table mt-3">
+        <thead class="table-header">
+            <tr>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Department</th>
+                <th>Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var emp in Model)
+            {
+                <tr>
+                    <td>@emp.FullName</td>
+                    <td>@emp.Email</td>
+                    <td>@emp.PhoneNumber</td>
+                    <td>@emp.Department?.DepartmentName</td>
+                    <td>@emp.Role</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

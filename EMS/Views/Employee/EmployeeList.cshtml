@@ -1,0 +1,50 @@
+﻿@model IEnumerable<EMS.Models.Employee>
+
+@{
+    ViewData["Title"] = "Employees";
+}
+
+<div class="employee-list-page">
+    <h2 class="page-title">Employees</h2>
+
+    <div class="top-bar d-flex justify-content-end mb-3">
+        <a class="btn btn-primary" asp-action="Create">Add New Employee</a>
+    </div>
+
+    <table class="table employee-table table-bordered table-striped">
+        <thead class="table-header">
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Role</th>
+                <th>Department</th>
+                <th>Leave Balance</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var e in Model)
+            {
+                <tr>
+                    <td>@e.FullName</td>
+                    <td>@e.Email</td>
+                    <td>@e.PhoneNumber</td>
+                    <td>@e.Role</td>
+                    <td>@e.Department?.DepartmentName</td>
+                    <td>@e.LeaveBalance</td>
+                    <td>
+                        <span class="@(e.IsActive ? "text-success fw-semibold" : "text-danger fw-semibold")">
+                            @(e.IsActive ? "Active" : "Inactive")
+                        </span>
+                    </td>
+                    <td>
+                        <a class="btn btn-warning btn-sm me-1" asp-action="Edit" asp-route-id="@e.EmployeeId">Edit</a>
+                        <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@e.EmployeeId">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

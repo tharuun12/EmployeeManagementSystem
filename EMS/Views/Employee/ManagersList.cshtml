@@ -1,0 +1,29 @@
+﻿@model IEnumerable<EMS.ViewModels.ManagerDetailsViewModel>
+
+@{
+    ViewData["Title"] = "Manager Details";
+}
+
+<h2>Manager Details</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Employee ID</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Department</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var manager in Model)
+        {
+            <tr>
+                <td>@manager.EmployeeId</td>
+                <td>@manager.FullName</td>
+                <td>@manager.Email</td>
+                <td>@manager.DepartmentName</td>
+            </tr>
+        }
+    </tbody>
+</table>

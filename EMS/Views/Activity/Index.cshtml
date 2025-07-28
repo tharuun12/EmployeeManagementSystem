@@ -1,0 +1,25 @@
+﻿@model IEnumerable<Employee>
+
+<h2>Employee Activity Tracker</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Employee Name</th>
+            <th>Email</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var emp in Model)
+        {
+            <tr>
+                <td>@emp.FullName</td>
+                <td>@emp.Email</td>
+                <td>
+                    <a asp-action="LoginHistory" asp-route-userId="@emp.Email" class="btn btn-sm btn-primary">Login History</a>
+                    <a asp-action="RecentActivity" asp-route-userId="@emp.Email" class="btn btn-sm btn-secondary">Recent Activity</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

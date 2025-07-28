@@ -1,0 +1,47 @@
+﻿@model IEnumerable<EMS.Models.LeaveRequest>
+
+<div class="employee-leave-history">
+    <h2 class="leave-heading">My Leaves - @ViewBag.EmployeeName</h2>
+
+    <table class="leave-table">
+        <thead>
+            <tr>
+                <th>Start</th>
+                <th>End</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Requested On</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var leave in Model)
+            {
+                <tr>
+                    <td>@leave.StartDate.ToShortDateString()</td>
+                    <td>@leave.EndDate.ToShortDateString()</td>
+                    <td>@leave.Reason</td>
+                    <td>
+                        @if (leave.Status == "Approved")
+                        {
+                            <span class="status approved">Approved</span>
+                        }
+                        else if (leave.Status == "Rejected")
+                        {
+                            <span class="status rejected">Rejected</span>
+                        }
+                        else
+                        {
+                            <span class="status pending">Pending</span>
+                        }
+                    </td>
+                    <td>@leave.RequestDate.ToShortDateString()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (!Model.Any())
+    {
+        <div class="leave-empty-message">You don't Have Approved/ Past Leaves.</div>
+    }
+</div>

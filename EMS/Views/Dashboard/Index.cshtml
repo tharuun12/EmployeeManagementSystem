@@ -1,0 +1,98 @@
+﻿@{
+    ViewData["Title"] = "EMS Dashboard";
+    var recentEmployees = ViewBag.RecentEmployees as List<EMS.Models.Employee>;
+    var departmentStats = ViewBag.DepartmentStats as List<dynamic>;
+}
+@using EMS.ViewModels;
+@model List<DepartmentStatsViewModel>
+
+
+<h2 class="text-center mb-4">EMS Dashboard</h2>
+
+<div class="dashboard-cards">
+    <div class="card total">
+        <h3>Total Employees</h3>
+        <p>@ViewBag.TotalEmployees</p>
+    </div>
+    <div class="card active">
+        <h3>Active Employees</h3>
+        <p>@ViewBag.ActiveEmployees</p>
+    </div>
+    <div class="card departments">
+        <h3>Total Departments</h3>
+        <p>@ViewBag.TotalDepartments</p>
+    </div>
+</div>
+
+<canvas id="summaryChart" height="100"></canvas>
+
+<h4 class="mt-5">🧑‍💼 Recent Employees</h4>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Designation</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var emp in recentEmployees)
+        {
+            <tr>
+                <td>@emp.FullName</td>
+                <td>@emp.Email</td>
+                <td>@emp.PhoneNumber</td>
+                <td>@emp.Role</td>
+                @* <td>@emp.CreatedDate.ToString("dd MMM yyyy")</td> *@
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4 class="mt-5">🏢 Department-wise Employee Count</h4>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Department</th>
+            <th>No. of Employees</th>
+        </tr>
+    </thead>
+    @* Have to solve this issue of returning the null value even there is a persent of data  *@
+    <tbody>
+        @foreach (var stat in Model)
+        {
+            <tr>
+                <td>@stat.Name</td>
+                <td>@stat.EmployeeCount</td>
+            </tr>
+        }
+    </tbody>
+
+
+</table>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('summaryChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Total Employees', 'Active Employees', 'Departments'],
+                datasets: [{
+                    label: 'EMS Overview',
+                    data: [@ViewBag.TotalEmployees, @ViewBag.ActiveEmployees, @ViewBag.TotalDepartments],
+                    backgroundColor: ['#3498db', '#2ecc71', '#9b59b6'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    </script>
+}
