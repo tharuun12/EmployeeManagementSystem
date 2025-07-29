@@ -2,39 +2,44 @@
 using System.Net.Mail;
 using Microsoft.Extensions.Options;
 using EMS.Models;
+using EMS.Services.Interface;
 
-public class EmailService : IEmailService
+namespace EMS.Services.Implementations
 {
-    private readonly EmailSettings _settings;
-
-    public EmailService(IOptions<EmailSettings> options)
+    public class EmailService : IEmailService
     {
-        _settings = options.Value;
-    }
+        private readonly EmailSettings _settings;
 
-    public async Task SendEmailAsync(string toEmail, string subject, string body)
-    {
-        try
+        public EmailService(IOptions<EmailSettings> options)
         {
-            var client = new SmtpClient(_settings.SmtpServer)
-            {
-                Port = _settings.Port,
-                Credentials = new NetworkCredential(_settings.Username, _settings.Password),
-                EnableSsl = true
-            };
-
-            var mail = new MailMessage(_settings.From, toEmail, subject, body)
-            {
-                IsBodyHtml = true
-            };
-
-            await client.SendMailAsync(mail);
+            _settings = options.Value;
         }
-        catch (Exception ex)
+
+        public async Task SendEmailAsync(string toEmail, string subject, string body)
         {
-            Console.WriteLine("Email error: " + ex.Message);
-            throw;
+            try
+            {
+                var client = new SmtpClient(_settings.SmtpServer)
+                {
+                    Port = _settings.Port,
+                    Credentials = new NetworkCredential(_settings.Username, _settings.Password),
+                    EnableSsl = true
+                };
+
+                var mail = new MailMessage(_settings.From, toEmail, subject, body)
+                {
+                    IsBodyHtml = true
+                };
+
+                await client.SendMailAsync(mail);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Email error: " + ex.Message);
+                throw;
+            }
         }
+
     }
 
 }

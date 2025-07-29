@@ -2,6 +2,7 @@
 using EMS.Web.Controllers;
 using EMS.Web.Data;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
@@ -48,11 +49,24 @@ namespace EMS.Tests.Controllers
             await context.SaveChangesAsync();
             return context;
         }
+        // ✅ Add inside DepartmentControllerTests.cs, inside the class
+        private RoleManager<IdentityRole> GetMockRoleManager()
+        {
+            var store = new Mock<IRoleStore<IdentityRole>>();
+            return new RoleManager<IdentityRole>(
+                store.Object,
+                null, null, null, null);
+        }
+
 
         // Utility: Setup controller with mock TempData
+        // ✅ Add/Update this inside DepartmentControllerTests.cs
         private DepartmentController SetupControllerWithContext(AppDbContext context)
         {
-            var controller = new DepartmentController(context);
+            var roleManager = GetMockRoleManager();
+            var controller = new DepartmentController(context, roleManager);
+
+
 
             var tempData = new TempDataDictionary(
                 new DefaultHttpContext(),
@@ -63,12 +77,14 @@ namespace EMS.Tests.Controllers
             return controller;
         }
 
+
         [Fact]
         public async Task Index_ReturnsViewWithDepartments()
         {
             // Arrange
             var context = await GetInMemoryDbContextAsync();
-            var controller = new DepartmentController(context);
+            var roleManager = GetMockRoleManager();
+            var controller = new DepartmentController(context, roleManager);
 
             // Act
             var result = await controller.Index();
@@ -84,7 +100,8 @@ namespace EMS.Tests.Controllers
         {
             // Arrange
             var context = await GetInMemoryDbContextAsync();
-            var controller = new DepartmentController(context);
+            var roleManager = GetMockRoleManager();
+            var controller = new DepartmentController(context, roleManager);
 
             // Act
             var result = controller.Create();
@@ -123,7 +140,8 @@ namespace EMS.Tests.Controllers
         {
             // Arrange
             var context = await GetInMemoryDbContextAsync();
-            var controller = new DepartmentController(context);
+            var roleManager = GetMockRoleManager();
+            var controller = new DepartmentController(context, roleManager);
 
             // Act
             var result = await controller.Edit(1);

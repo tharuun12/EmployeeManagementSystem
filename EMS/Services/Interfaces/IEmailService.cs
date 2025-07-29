@@ -1,4 +1,7 @@
-﻿public interface IEmailService
+﻿namespace EMS.Services.Interface
 {
-    Task SendEmailAsync(string toEmail, string subject, string body);
+    public interface IEmailService
+    {
+        Task SendEmailAsync(string toEmail, string subject, string body);
+    }
 }

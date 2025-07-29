@@ -55,107 +55,107 @@ namespace EMS.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(EmployeeViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var normalizedEmail = model.Email.Trim().ToLower();
-
-                var currentEmployee = await _context.Employees
-                    .FirstOrDefaultAsync(e => e.Email.ToLower().Trim() == normalizedEmail);
-
-                if (currentEmployee != null)
-                {
-                    TempData["ToastMessage"] = "A user with this Email already exists.";
-                    await LoadDropdownsAsync();
-                    return View(model);
-                }
-                if (model.Role == "Employee")
-                {
-                    var departmentCheck = await _context.Department.FirstOrDefaultAsync(e => e.DepartmentId == model.DepartmentId);
-                    if (departmentCheck?.ManagerId == null)
-                    {
-                        var managerCheck = await _context.Employees.FirstOrDefaultAsync(e => e.Role == "Admin");
-
-                        TempData["ToastMessage"] = "PLease create the Manager for the departement";
-                        await LoadDropdownsAsync();
-                        return View(model);
-                    }
-                }
-                else if (model.Role == "Manager")
-                {
-                    var adminCount = await _context.Employees.CountAsync(e => e.Role == "Admin");
-
-                    if (adminCount < 1)
-                    {
-                        TempData["ToastMessage"] = "Please create an Admin first to proceed.";
-                        await LoadDropdownsAsync();
-                        return View(model);
-                    }
-                }
-
-
-                var role = await _roleManager.FindByNameAsync(model.Role);
-                var department = await _context.Department
-                    .FirstOrDefaultAsync(e => e.DepartmentId == model.DepartmentId);
-
-
-                if (role == null)
-                {
-                    TempData["ToastMessage"] = "Selected role is invalid.";
-
-                    //ModelState.AddModelError("Role", "Selected role is invalid.");
-                    await LoadDropdownsAsync();
-                    return View(model);
-                }
-
-                var employee = new Employee
-                {
-                    FullName = model.FullName,
-                    Email = model.Email,
-                    PhoneNumber = model.PhoneNumber,
-                    Role = model.Role,
-                    RoleID = role?.Id,
-                    IsActive = model.IsActive,
-                    DepartmentId = model.DepartmentId,
-                    ManagerId = department?.ManagerId,
-                    LeaveBalance = model.LeaveBalance
-                };
-
-                _context.Employees.Add(employee);
-                await _context.SaveChangesAsync();
-
-                var employeeIdValue = await _context.Employees
-                    .FirstOrDefaultAsync(e => e.Email == model.Email);
-
-                var employeeLogValue = new EmployeeLog
-                {
-                    EmployeeId = employeeIdValue.EmployeeId,
-                    FullName = model.FullName,
-                    Email = model.Email,
-                    PhoneNumber = model.PhoneNumber,
-                    Role = model.Role,
-                    RoleID = employeeIdValue.RoleID,
-                    IsActive = model.IsActive,
-                    DepartmentId = model.DepartmentId,
-                    ManagerId = model?.ManagerId,
-                    Operation = "Created",
-                    TimeStamp = DateTime.Now
-                };
-                if (department != null)
-                {
-                    department.ManagerName = model.FullName;
-                    department.ManagerId = employeeIdValue.EmployeeId;
-
-                    await _context.SaveChangesAsync(); 
-                }
-                _context.EmployeeLog.Add(employeeLogValue);
-                await _context.SaveChangesAsync();
-
-                TempData["ToastSuccess"] = "Employee created successfully!";
-                return RedirectToAction("EmployeeList", "Employee");
+                await LoadDropdownsAsync();
+                return View(model);
             }
 
-            await LoadDropdownsAsync();
-            return View(model);
+            var normalizedEmail = model.Email.Trim().ToLower();
+
+            var existingEmployee = await _context.Employees
+                .FirstOrDefaultAsync(e => e.Email.ToLower().Trim() == normalizedEmail);
+
+            if (existingEmployee != null)
+            {
+                TempData["ToastMessage"] = "A user with this Email already exists.";
+                await LoadDropdownsAsync();
+                return View(model);
+            }
+
+            // Validation: Role & Department dependency
+            if (model.Role == "Employee")
+            {
+                var department = await _context.Department
+                    .FirstOrDefaultAsync(d => d.DepartmentId == model.DepartmentId);
+
+                if (department?.ManagerId == null)
+                {
+                    TempData["ToastMessage"] = "Please assign a Manager to the Department first.";
+                    await LoadDropdownsAsync();
+                    return View(model);
+                }
+            }
+            else if (model.Role == "Manager")
+            {
+                var adminExists = await _context.Employees.AnyAsync(e => e.Role == "Admin");
+
+                if (!adminExists)
+                {
+                    TempData["ToastMessage"] = "Please create an Admin before adding a Manager.";
+                    await LoadDropdownsAsync();
+                    return View(model);
+                }
+            }
+
+            // Fetch Role & Department
+            var role = await _roleManager.FindByNameAsync(model.Role);
+            if (role == null)
+            {
+                TempData["ToastMessage"] = "Selected role is invalid.";
+                await LoadDropdownsAsync();
+                return View(model);
+            }
+
+            var departmentInfo = await _context.Department
+                .FirstOrDefaultAsync(d => d.DepartmentId == model.DepartmentId);
+
+            // Prepare Employee
+            var employee = new Employee
+            {
+                FullName = model.FullName,
+                Email = model.Email,
+                PhoneNumber = model.PhoneNumber,
+                Role = model.Role,
+                RoleID = role.Id,
+                IsActive = model.IsActive,
+                DepartmentId = model.DepartmentId,
+                ManagerId = departmentInfo?.ManagerId,
+                LeaveBalance = model.LeaveBalance
+            };
+
+            _context.Employees.Add(employee);
+            await _context.SaveChangesAsync();
+
+            // Update Department if Role is Manager
+            if (model.Role == "Manager" && departmentInfo != null)
+            {
+                departmentInfo.ManagerId = employee.EmployeeId;
+                departmentInfo.ManagerName = employee.FullName;
+                await _context.SaveChangesAsync();
+            }
+
+            // Create Employee Log
+            var employeeLog = new EmployeeLog
+            {
+                EmployeeId = employee.EmployeeId,
+                FullName = model.FullName,
+                Email = model.Email,
+                PhoneNumber = model.PhoneNumber,
+                Role = model.Role,
+                RoleID = employee.RoleID,
+                IsActive = model.IsActive,
+                DepartmentId = model.DepartmentId,
+                ManagerId = employee.ManagerId,
+                Operation = "Created",
+                TimeStamp = DateTime.Now
+            };
+
+            _context.EmployeeLog.Add(employeeLog);
+            await _context.SaveChangesAsync();
+
+            TempData["ToastSuccess"] = "Employee created successfully!";
+            return RedirectToAction("EmployeeList");
         }
 
         //Employee/Edit/1 - Get
@@ -183,32 +183,74 @@ namespace EMS.Web.Controllers
             {
                 try
                 {
-                    var employeeData = await _context.Employees
-                        .FirstOrDefaultAsync(e => e.EmployeeId == employee.EmployeeId);
+                    var existingEmployee = await _context.Employees
+                        .Include(e => e.Department)
+                        .FirstOrDefaultAsync(e => e.EmployeeId == id);
 
-                    if (employeeData == null)
+                    if (existingEmployee == null)
                         return NotFound();
 
-                    // Update only the fields that changed
-                    employeeData.FullName = employee.FullName;
-                    employeeData.Email = employee.Email;
-                    employeeData.PhoneNumber = employee.PhoneNumber;
-                    employeeData.Role = employee.Role;
-                    employeeData.RoleID = employee.RoleID;
-                    employeeData.DepartmentId = employee.DepartmentId;
-                    employeeData.ManagerId = employee.ManagerId;
-                    employeeData.IsActive = employee.IsActive;
+                    bool wasManager = existingEmployee.Role == "Manager";
 
-                    // Optional: If department changed, update it
-                    if (employeeData.DepartmentId != employee.DepartmentId)
+                    var department = await _context.Department
+                        .FirstOrDefaultAsync(e => e.DepartmentId == employee.DepartmentId);
+
+                    employee.ManagerId = department?.ManagerId;
+
+                    // Update role ID
+                    var roleId = (await _roleManager.FindByNameAsync(employee.Role))?.Id;
+                    employee.RoleID = roleId;
+
+                    // Update fields
+                    existingEmployee.FullName = employee.FullName;
+                    existingEmployee.Email = employee.Email;
+                    existingEmployee.PhoneNumber = employee.PhoneNumber;
+                    existingEmployee.Role = employee.Role;
+                    existingEmployee.RoleID = roleId;
+                    existingEmployee.IsActive = employee.IsActive;
+                    existingEmployee.DepartmentId = employee.DepartmentId;
+                    existingEmployee.ManagerId = employee.ManagerId;
+
+                    if (employee.Role == "Manager")
                     {
-                        var department = await _context.Department
-                            .FirstOrDefaultAsync(d => d.DepartmentId == employee.DepartmentId);
-
+                        // Assign this employee as the manager in the department
                         if (department != null)
                         {
-                            department.ManagerName = employee.FullName;
-                            department.ManagerId = employee.EmployeeId;
+                            department.ManagerId = existingEmployee.EmployeeId;
+                            department.ManagerName = existingEmployee.FullName;
+
+                            //Update all employees in the department to reflect this manager
+                            var employeesInDept = await _context.Employees
+                                .Where(e => e.DepartmentId == employee.DepartmentId && e.EmployeeId != employee.EmployeeId)
+                                .ToListAsync();
+
+                            foreach (var emp in employeesInDept)
+                            {
+                                emp.ManagerId = employee.EmployeeId;
+                            }
+                        }
+                    }
+                    else if (wasManager && employee.Role != "Manager")
+                    {
+                        // If demoted, remove as manager from all departments
+                        var deptsManaged = await _context.Department
+                            .Where(d => d.ManagerId == employee.EmployeeId)
+                            .ToListAsync();
+
+                        foreach (var dept in deptsManaged)
+                        {
+                            dept.ManagerId = null;
+                            dept.ManagerName = null;
+                        }
+
+                        // Also clear their subordinates
+                        var employeesManaged = await _context.Employees
+                            .Where(e => e.ManagerId == employee.EmployeeId)
+                            .ToListAsync();
+
+                        foreach (var emp in employeesManaged)
+                        {
+                            emp.ManagerId = null;
                         }
                     }
 
@@ -229,6 +271,7 @@ namespace EMS.Web.Controllers
             ViewBag.Roles = await _roleManager.Roles.ToListAsync();
             return View(employee);
         }
+
 
 
         // Employee/Delete/EmployeeId - Get
@@ -253,7 +296,7 @@ namespace EMS.Web.Controllers
 
             if (employee != null)
             {
-                // Step 1: Lock the user
+                // Lock the Identity user
                 var user = await _userManager.FindByEmailAsync(employee.Email);
                 if (user != null)
                 {
@@ -262,7 +305,17 @@ namespace EMS.Web.Controllers
                     await _userManager.UpdateAsync(user);
                 }
 
-                // Step 2: Unassign the employee as Manager in departments
+                // Unassign this employee as Manager from all subordinates
+                var subordinates = await _context.Employees
+                    .Where(e => e.ManagerId == employee.EmployeeId)
+                    .ToListAsync();
+
+                foreach (var subordinate in subordinates)
+                {
+                    subordinate.ManagerId = null;
+                }
+
+                // Unassign the employee as Manager in departments
                 var departments = await _context.Department
                     .Where(d => d.ManagerId == employee.EmployeeId)
                     .ToListAsync();
@@ -271,18 +324,43 @@ namespace EMS.Web.Controllers
                 {
                     dept.ManagerId = null;
                     dept.ManagerName = null;
+
+                    // Log the change
+                    _context.departmentLogs.Add(new DepartmentLogs
+                    {
+                        DepartmentId = dept.DepartmentId,
+                        DepartmentName = dept.DepartmentName,
+                        ManagerId = null,
+                        Operation = "Unassigned Manager (Deleted)",
+                        TimeStamp = DateTime.Now
+                    });
                 }
 
-                // Step 3: Delete employee
+                // Log the deletion
+                _context.EmployeeLog.Add(new EmployeeLog
+                {
+                    EmployeeId = employee.EmployeeId,
+                    FullName = employee.FullName,
+                    Email = employee.Email,
+                    PhoneNumber = employee.PhoneNumber,
+                    Role = employee.Role,
+                    RoleID = employee.RoleID,
+                    IsActive = employee.IsActive,
+                    DepartmentId = employee.DepartmentId,
+                    ManagerId = employee.ManagerId,
+                    Operation = "Deleted",
+                    TimeStamp = DateTime.Now
+                });
+
+                // Remove employee
                 _context.Employees.Remove(employee);
 
                 await _context.SaveChangesAsync();
+                TempData["ToastSuccess"] = "Employee deleted and changes updated successfully.";
             }
 
             return RedirectToAction(nameof(EmployeeList));
         }
-
-
 
         // GET: Employee/Filter
         [Authorize(Roles = "Admin, Manager")]
