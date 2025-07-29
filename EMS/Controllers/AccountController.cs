@@ -30,7 +30,7 @@ public class AccountController : Controller
         _config = config;
         _emailService = emailService;
         _context = context;
-        _logger = logger; // Corrected from 'loggers' to 'logger'
+        _logger = logger; 
     }
 
     // Account/Login
@@ -117,7 +117,7 @@ public class AccountController : Controller
             return View(model);
         }
 
-        // ✅ Check if user is locked out
+        // Check if user is locked out
         if (user.LockoutEnabled && user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow)
         {
             ModelState.AddModelError(string.Empty, "This account has been disabled. Please contact administrator.");
@@ -233,7 +233,6 @@ public class AccountController : Controller
         TempData["OTPExpiry"] = DateTime.UtcNow.AddMinutes(10).ToString();
 
         var body = $"Your OTP to reset your EMS password is: <b>{otp}</b><br/>This OTP is valid for 10 minutes.";
-        await _emailService.SendEmailAsync(model.Email, "EMS Password Reset OTP", body);
 
         return RedirectToAction("VerifyOtp", new { email = model.Email });
     }
@@ -362,9 +361,9 @@ public class AccountController : Controller
     [HttpPost]
     public async Task<IActionResult> Logout()
     {
-        var userId = _userManager.GetUserId(User); // Get current user ID
+        var userId = _userManager.GetUserId(User);
 
-        // Optional: Calculate session duration from session value (if you're using it)
+
         var loginTimeStr = HttpContext.Session.GetString("LoginTime");
         if (DateTime.TryParse(loginTimeStr, out var loginTime))
         {
@@ -374,7 +373,6 @@ public class AccountController : Controller
             _logger.LogInformation("User logged out successfully.");
         }
 
-        // ✅ Update LogoutTime in LoginActivity table
         var loginRecord = await _context.LoginActivityLogs
             .Where(x => x.userId == userId && x.LogoutTime == null)
             .OrderByDescending(x => x.LoginTime)
@@ -386,10 +384,9 @@ public class AccountController : Controller
             await _context.SaveChangesAsync();
         }
 
-        // ✅ Clear session + sign out
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         HttpContext.Session.Clear();
-        Response.Cookies.Delete("jwtToken"); // Optional
+        Response.Cookies.Delete("jwtToken"); 
 
         return RedirectToAction("Login", "Account");
     }

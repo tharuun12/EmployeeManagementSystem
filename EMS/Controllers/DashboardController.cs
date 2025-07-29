@@ -1,5 +1,6 @@
 ﻿using EMS.ViewModels;
 using EMS.Web.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +16,7 @@ namespace EMS.Controllers
         }
 
         // Dashboard/Index - Get ( Get all the analytics of the Employee and Departement )
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index()
         {
             var totalEmployees = await _context.Employees.CountAsync();

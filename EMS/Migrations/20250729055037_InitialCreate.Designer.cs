@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EMS.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250728042256_first code push")]
-    partial class firstcodepush
+    [Migration("20250729055037_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

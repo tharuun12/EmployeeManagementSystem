@@ -78,6 +78,12 @@ builder.Services.AddRazorPages();
 
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await DbSeeder.SeedDefaultAdminAsync(services);
+}
+
 //using (var scope = app.Services.CreateScope())
 //{
 //    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();

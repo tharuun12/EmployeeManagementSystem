@@ -2,7 +2,6 @@
 using EMS.ViewModels;
 using EMS.Models;
 using EMS.Web.Models;
-using EMS.Data;
 namespace EMS.Helpers
 {
     public static class RoleSeeder

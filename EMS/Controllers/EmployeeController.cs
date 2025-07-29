@@ -2,6 +2,7 @@
 using EMS.ViewModels;
 using EMS.Web.Data;
 using EMS.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,7 @@ namespace EMS.Web.Controllers
         }
 
         // Employee/Index - Get
+        [Authorize(Roles = "Admin, Manager")]
         public async Task<IActionResult> EmployeeList()
         {
             var employees = await _context.Employees
@@ -32,6 +34,7 @@ namespace EMS.Web.Controllers
             return View(employees);
         }
 
+        [Authorize(Roles = "Admin")]
         // Employee/Create - Get
         public async Task<IActionResult> Create()
         {
@@ -40,7 +43,6 @@ namespace EMS.Web.Controllers
             return View();
         }
 
-        
         private async Task LoadDropdownsAsync()
         {
             ViewBag.Departments = await _context.Department.ToListAsync();
@@ -49,6 +51,7 @@ namespace EMS.Web.Controllers
         }
         
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(EmployeeViewModel model)
         {
@@ -148,7 +151,7 @@ namespace EMS.Web.Controllers
                 await _context.SaveChangesAsync();
 
                 TempData["ToastSuccess"] = "Employee created successfully!";
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("EmployeeList", "Employee");
             }
 
             await LoadDropdownsAsync();
@@ -168,6 +171,7 @@ namespace EMS.Web.Controllers
         }
 
         // Employee/Edit/EmployeeId - Post
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Employee employee)
@@ -240,6 +244,7 @@ namespace EMS.Web.Controllers
             return View(employee);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -280,6 +285,7 @@ namespace EMS.Web.Controllers
 
 
         // GET: Employee/Filter
+        [Authorize(Roles = "Admin, Manager")]
         public async Task<IActionResult> Filter(int? departmentId, string? role)
         {
             var query = _context.Employees.Include(e => e.Department).AsQueryable();
@@ -322,6 +328,8 @@ namespace EMS.Web.Controllers
 
             return View(leaves);
         }
+
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ManagersList()
         {
             var managers = await _context.Employees
@@ -378,11 +386,5 @@ namespace EMS.Web.Controllers
 
             return View(viewModel);
         }
-
-
-
-
-
-
     }
 }

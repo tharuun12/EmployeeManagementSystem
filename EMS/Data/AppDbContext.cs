@@ -10,7 +10,7 @@ namespace EMS.Web.Data
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<Employee> Employees { get; set; }
-        public DbSet<Department> Department { get; set; }  // Rename to plural for convention
+        public DbSet<Department> Department { get; set; }  
         public DbSet<LeaveBalance> LeaveBalances { get; set; }
         public DbSet<LeaveRequest> LeaveRequests { get; set; }
         public DbSet<UserActivity> UserActivities { get; set; }

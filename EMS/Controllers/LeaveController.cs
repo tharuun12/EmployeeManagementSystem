@@ -1,5 +1,6 @@
 ﻿using EMS.Models;
 using EMS.Web.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -94,6 +95,7 @@ namespace EMS.Web.Controllers
         }
 
         // GET: /Leave/ApproveList
+        [Authorize(Roles = "Admin, Manager")]
         public async Task<IActionResult> ApproveList()
         {
             var leaves = await _context.LeaveRequests
@@ -105,6 +107,7 @@ namespace EMS.Web.Controllers
         }
 
         // GET: /Leave/Approvals/5
+        [Authorize(Roles = "Admin, Manager")]
         public async Task<IActionResult> Approvals(int id)
         {
             var leave = await _context.LeaveRequests
@@ -120,6 +123,7 @@ namespace EMS.Web.Controllers
         // POST: /Leave/Approvals/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin, Manager")]
         public async Task<IActionResult> Approvals(int id, string status)
         {
             var leave = await _context.LeaveRequests.FindAsync(id);

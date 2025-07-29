@@ -40,13 +40,12 @@
             <input asp-for="ConfirmPassword" type="password" class="register-input" />
             <span asp-validation-for="ConfirmPassword" class="register-error"></span>
         </div>
-        <div class="login-remember-forgot">
-            <a asp-action="Login" class="login-link">Login</a>
-
-        </div>
 
         <div class="register-actions">
             <button type="submit" class="register-button">Register</button>
+        </div>
+        <div class="login-remember-forgot1">
+            <p >Already have an account? <a asp-action="Login" class="login-forgot-link1">Login</a></p>
         </div>
     </form>
 </div>

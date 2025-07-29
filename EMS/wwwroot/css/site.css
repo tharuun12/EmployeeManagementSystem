@@ -83,8 +83,8 @@ body {
 /* Validation summary */
 .register-validation-summary {
     color: #dc3545;
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
+/*    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;*/
     padding: 10px;
     border-radius: 5px;
     margin-bottom: 15px;
@@ -166,6 +166,7 @@ body {
 .login-error {
     color: #dc3545;
     font-size: 14px;
+    text-align:center;
     margin-top: 5px;
     display: block;
 }
@@ -173,8 +174,8 @@ body {
 /* Validation summary */
 .login-validation-summary {
     color: #dc3545;
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
+/*    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;*/
     padding: 10px;
     border-radius: 5px;
     margin-bottom: 15px;
@@ -188,12 +189,10 @@ body {
     margin-top: 10px;
 }
 .login-remember-forgot1 {
-    display: flex;
-    justify-content: flex-end; 
-    align-items: center;
-    gap: 20px; 
+    text-align: center;
     margin-top: 10px;
 }
+
 
 /* Remember Me section */
 .login-remember {
@@ -238,12 +237,17 @@ body {
     margin-top: 20px;
 }
 
-    .login-button:hover {
-        background-color: #0056b3;
-    }
+.login-button:hover {
+    background-color: #0056b3;
+}
+.login-remember-forgot2 {
+    display: flex;
+    justify-content: flex-end;
+}
 
-
-
+.login-link2 {
+    font-size: 18px;
+}
 /*New CSS code */
 /* Universal Create Form Styling */
 .create-form {

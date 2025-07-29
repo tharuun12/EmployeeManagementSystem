@@ -1,40 +1,45 @@
 ﻿@model IEnumerable<EMS.Models.LeaveRequest>
 
-<div class="leave-approvals-page">
-    <h2 class="approvals-heading">Pending Leave Approvals</h2>
+@{
+    ViewData["Title"] = "Pending Leave Approvals";
+}
 
-    <table class="table table-bordered table-striped approvals-table">
-        <thead class="table-header">
-            <tr>
-                <th>Employee</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>Reason</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var leave in Model)
-            {
-                <tr>
-                    <td>@leave.Employee?.FullName</td>
-                    <td>@leave.StartDate.ToShortDateString()</td>
-                    <td>@leave.EndDate.ToShortDateString()</td>
-                    <td>@leave.Reason</td>
-                    <td>
-                        <a class="btn btn-outline-primary btn-sm approval-review-btn"
-                           asp-action="Approvals" asp-route-id="@leave.LeaveRequestId">
-                            Review
-                        </a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+<div class="data-section">
+    <h2 class="data-title">Pending Leave Approvals</h2>
 
-    @if (!Model.Any())
+    @if (Model != null && Model.Any())
     {
-        <div class="alert alert-warning no-approvals-alert">
+        <table class="table table-bordered table-striped data-table">
+            <thead class="table-header">
+                <tr>
+                    <th>Employee</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Reason</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var leave in Model)
+                {
+                    <tr>
+                        <td>@leave.Employee?.FullName</td>
+                        <td>@leave.StartDate.ToShortDateString()</td>
+                        <td>@leave.EndDate.ToShortDateString()</td>
+                        <td>@leave.Reason</td>
+                        <td>
+                            <a asp-action="Approvals" asp-route-id="@leave.LeaveRequestId" class="btn btn-sm btn-outline-primary">
+                                Review
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="data-empty alert alert-warning text-center mt-3">
             No pending leave requests to approve.
         </div>
     }

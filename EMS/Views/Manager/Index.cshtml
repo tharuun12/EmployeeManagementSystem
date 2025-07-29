@@ -4,43 +4,41 @@
     ViewData["Title"] = "My Profile";
 }
 
-<div class="data-section">
-    <h2 class="data-title">Manager Profile</h2>
+<div class="employee-profile-container">
+    <div class="employee-profile-card">
+        <h2 class="profile-title">Manager Profile</h2>
 
-    <table class="data-table">
-        <tbody>
-            <tr>
-                <th>Full Name</th>
-                <td>@Model.Employee.FullName</td>
-            </tr>
-            <tr>
-                <th>Email</th>
-                <td>@Model.Employee.Email</td>
-            </tr>
-            <tr>
-                <th>Phone</th>
-                <td>@Model.Employee.PhoneNumber</td>
-            </tr>
-            <tr>
-                <th>Role</th>
-                <td>@Model.Employee.Role</td>
-            </tr>
-            <tr>
-                <th>Department</th>
-                <td>@Model.Employee.Department?.DepartmentName</td>
-            </tr>
-            <tr>
-                <th>Leave Balance</th>
-                <td>@Model.Employee.LeaveBalance</td>
-            </tr>
-            <tr>
-                <th>Status</th>
-                <td>
-                    <span class="data-status @(Model.Employee.IsActive ? "approved" : "rejected")">
-                        @(Model.Employee.IsActive ? "Active" : "Inactive")
-                    </span>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+        <div class="profile-info">
+            <div class="profile-row">
+                <span class="label">Full Name:</span>
+                <span class="value">@Model.Employee.FullName</span>
+            </div>
+            <div class="profile-row">
+                <span class="label">Email:</span>
+                <span class="value">@Model.Employee.Email</span>
+            </div>
+            <div class="profile-row">
+                <span class="label">Phone:</span>
+                <span class="value">@Model.Employee.PhoneNumber</span>
+            </div>
+            <div class="profile-row">
+                <span class="label">Role:</span>
+                <span class="value">@Model.Employee.Role</span>
+            </div>
+            <div class="profile-row">
+                <span class="label">Department:</span>
+                <span class="value">@Model.Employee.Department?.DepartmentName</span>
+            </div>
+            <div class="profile-row">
+                <span class="label">Leave Balance:</span>
+                <span class="value">@Model.Employee.LeaveBalance</span>
+            </div>
+            <div class="profile-row">
+                <span class="label">Status:</span>
+                <span class="value @(Model.Employee.IsActive ? "approved" : "rejected")">
+                    @(Model.Employee.IsActive ? "Active" : "Inactive")
+                </span>
+            </div>
+        </div>
+    </div>
 </div>

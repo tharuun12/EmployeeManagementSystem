@@ -1,5 +1,6 @@
 ﻿using EMS.Models;
 using EMS.Web.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +16,7 @@ namespace EMS.Web.Controllers
         }
 
         // Department/Index - Get
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index()
         {
             var departments = await _context.Department
@@ -24,6 +26,7 @@ namespace EMS.Web.Controllers
         }
 
         // Departement/Create - GET
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             ViewData["Managers"] = _context.Employees.ToList();
@@ -31,6 +34,7 @@ namespace EMS.Web.Controllers
         }
 
         // Departement/Create - POST
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Department department)
@@ -63,6 +67,7 @@ namespace EMS.Web.Controllers
         }
 
         // Departement/Edit/DepartmentId - GET
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
             var department = await _context.Department.FindAsync(id);
@@ -74,6 +79,7 @@ namespace EMS.Web.Controllers
         }
 
         // Departement/Edit/DepartmentId - POST
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Department department)
@@ -114,6 +120,7 @@ namespace EMS.Web.Controllers
         }
 
         // Departement/Delete/DepartmentId - GET
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var department = await _context.Department
@@ -127,6 +134,7 @@ namespace EMS.Web.Controllers
         }
 
         // Departement/Delete/DepartmentId - POST
+        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

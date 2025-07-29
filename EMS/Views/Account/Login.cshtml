@@ -29,15 +29,14 @@
                 <label class="login-remember-label">Remember Me</label>
             </div>
             <a asp-action="ForgotPassword" class="login-forgot-link1">Forgot Password?</a>
-            
-            
         </div>
-        <div class="login-remember-forgot1">
-            <a asp-action="Register" class="login-forgot-link1">Register</a>
 
-        </div>
         <div class="login-actions">
             <button type="submit" class="login-button">Login</button>
+        </div>
+
+        <div class="login-remember-forgot1">
+            <p>Don't have an account? <a asp-action="Register" class="login-forgot-link1">Register</a></p>
         </div>
     </form>
 </div>

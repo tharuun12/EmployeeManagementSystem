@@ -1,6 +1,7 @@
-﻿using EMS.Services; // Or your actual namespace where IEmailService is
+﻿using EMS; // Or your actual namespace where IEmailService is
 using EMS.ViewModels;
 using EMS.Web.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -64,6 +65,7 @@ namespace EMS.Controllers
         }
 
         // GET: /Manager/ApproveList
+        [Authorize(Roles = "Manager")]
         public async Task<IActionResult> ApproveList()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -93,6 +95,7 @@ namespace EMS.Controllers
         }
 
         // GET: /Manager/Approvals/5
+        [Authorize(Roles = "Manager")]
         public async Task<IActionResult> Approvals(int id)
         {
             var leave = await _context.LeaveRequests
@@ -106,6 +109,7 @@ namespace EMS.Controllers
         }
 
         // POST: /Manager/Approvals/5
+        [Authorize(Roles = "Manager")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Approvals(int id, string status)

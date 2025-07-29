@@ -1,11 +1,15 @@
 ﻿@model IEnumerable<EMS.Models.LeaveRequest>
 
+@{
+    ViewData["Title"] = "Pending Leave Approvals";
+}
+
 <div class="data-section">
     <h2 class="data-title">Pending Leave Approvals</h2>
 
     @if (Model != null && Model.Any())
     {
-        <table class="data-table">
+        <table class="table table-bordered table-striped data-table">
             <thead>
                 <tr>
                     <th>Employee</th>
@@ -24,8 +28,8 @@
                         <td>@leave.EndDate.ToShortDateString()</td>
                         <td>@leave.Reason</td>
                         <td>
-                            <a class="btn btn-sm btn-primary"
-                               asp-action="Approvals" asp-route-id="@leave.LeaveRequestId">
+                            <a asp-action="Approvals" asp-route-id="@leave.LeaveRequestId"
+                               class="btn btn-sm btn-outline-primary">
                                 Review
                             </a>
                         </td>
@@ -36,7 +40,7 @@
     }
     else
     {
-        <div class="data-empty">
+        <div class="alert alert-warning text-center mt-3">
             No pending leave requests to approve.
         </div>
     }
