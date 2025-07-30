@@ -2,15 +2,18 @@
 using EMS.Models;
 using EMS.ViewModels;
 using EMS.Web.Data;
+using EMS.Web.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Moq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
-using System.Collections.Generic;
-using System.Linq;
-using System;
 
 namespace EMS.Tests.Controller
 {
@@ -23,20 +26,39 @@ namespace EMS.Tests.Controller
                 .Options;
             return new AppDbContext(options);
         }
+        private UserManager<Users> GetMockUserManager()
+        {
+            var store = new Mock<IUserStore<Users>>();
+            return new UserManager<Users>(
+                store.Object, null, null, null, null, null, null, null, null);
+        }
+        private RoleManager<IdentityRole> GetMockRoleManager()
+        {
+            var store = new Mock<IRoleStore<IdentityRole>>();
+            return new RoleManager<IdentityRole>(
+                store.Object, null, null, null, null);
+        }
 
         private ManagerController GetControllerWithUser(AppDbContext context, string userId = "user1")
         {
-            var controller = new ManagerController(context);
+            var roleManager = GetMockRoleManager();
+            var userManager = GetMockUserManager();
+
+            var controller = new ManagerController(context, roleManager, userManager);
+
             var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, userId)
             }, "mock"));
+
             controller.ControllerContext = new ControllerContext
             {
                 HttpContext = new DefaultHttpContext { User = user }
             };
+
             return controller;
         }
+
 
         [Fact]
         public async Task Index_ReturnsViewWithEmployeeProfile_WhenUserExists()
@@ -74,7 +96,10 @@ namespace EMS.Tests.Controller
         {
             // Arrange
             using var context = GetDbContext(Guid.NewGuid().ToString());
-            var controller = new ManagerController(context);
+            var roleManager = GetMockRoleManager();
+            var userManager = GetMockUserManager();
+
+            var controller = new ManagerController(context, roleManager, userManager);
             controller.ControllerContext = new ControllerContext
             {
                 HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal() }

@@ -235,7 +235,7 @@ namespace EMS.Tests.Controllers
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("Index", redirect.ActionName);
 
-            Assert.True(controller.TempData.ContainsKey("ToastMessage"));
+            Assert.True(controller.TempData.ContainsKey("ToastError"));
             Assert.NotEmpty(await context.Department.ToListAsync());
         }
 

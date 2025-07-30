@@ -12,12 +12,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace EMS.Tests.Controller
 {
@@ -115,8 +109,13 @@ namespace EMS.Tests.Controller
             var configMock = new Mock<IConfiguration>();
             var loggerMock = new Mock<ILogger<AccountController>>();
 
+            //var controller = GetController(context, userManagerMock, signInManagerMock, emailServiceMock, configMock, loggerMock);
             var controller = GetController(context, userManagerMock, signInManagerMock, emailServiceMock, configMock, loggerMock);
-
+            //By initializing controller.TempData in your test, you are accurately simulating the environment that ASP.NET Core provides at runtime.
+            controller.TempData = new TempDataDictionary(
+                controller.ControllerContext.HttpContext,
+                Mock.Of<ITempDataProvider>()
+            );
             var model = new RegisterViewModel
             {
                 Email = "notfound@example.com",
@@ -133,7 +132,7 @@ namespace EMS.Tests.Controller
             Assert.True(controller.ModelState.ErrorCount > 0);
         }
 
-        [Fact]
+        [Fact] 
         public async Task Register_Post_RedirectsToLogin_WhenRegistrationSucceeds()
         {
             using var context = GetDbContext(Guid.NewGuid().ToString());
@@ -151,10 +150,10 @@ namespace EMS.Tests.Controller
             context.SaveChanges();
 
             var userManagerMock = MockUserManager();
-            userManagerMock.Setup(x => x.CreateAsync(It.IsAny<Users>(), It.IsAny<string>()))
-                .ReturnsAsync(IdentityResult.Success);
-            userManagerMock.Setup(x => x.AddToRoleAsync(It.IsAny<Users>(), It.IsAny<string>()))
-                .ReturnsAsync(IdentityResult.Success);
+                userManagerMock.Setup(x => x.CreateAsync(It.IsAny<Users>(), It.IsAny<string>()))
+                    .ReturnsAsync(IdentityResult.Success);
+                userManagerMock.Setup(x => x.AddToRoleAsync(It.IsAny<Users>(), It.IsAny<string>()))
+                    .ReturnsAsync(IdentityResult.Success);
 
             var signInManagerMock = MockSignInManager(userManagerMock.Object);
             var emailServiceMock = new Mock<IEmailService>();
@@ -162,6 +161,9 @@ namespace EMS.Tests.Controller
             var loggerMock = new Mock<ILogger<AccountController>>();
 
             var controller = GetController(context, userManagerMock, signInManagerMock, emailServiceMock, configMock, loggerMock);
+
+            // Dummy RemoteIpAddress
+            controller.ControllerContext.HttpContext.Connection.RemoteIpAddress = System.Net.IPAddress.Parse("127.0.0.1");
 
             var model = new RegisterViewModel
             {
@@ -192,7 +194,10 @@ namespace EMS.Tests.Controller
             var loggerMock = new Mock<ILogger<AccountController>>();
 
             var controller = GetController(context, userManagerMock, signInManagerMock, emailServiceMock, configMock, loggerMock);
-
+            controller.TempData = new TempDataDictionary(
+                controller.ControllerContext.HttpContext,
+                Mock.Of<ITempDataProvider>()
+            );
             var model = new LoginViewModel
             {
                 Email = "notfound@example.com",

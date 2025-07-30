@@ -17,7 +17,7 @@
             <span asp-validation-for="Email" class="register-error"></span>
         </div>
 
-        <div class="register-group">
+        @* <div class="register-group">
             <label class="register-label">Phone Number</label>
             <input asp-for="PhoneNumber" class="register-input" />
             <span asp-validation-for="PhoneNumber" class="register-error"></span>
@@ -27,7 +27,9 @@
             <label class="register-label">Full Name</label>
             <input asp-for="FullName" class="register-input" />
             <span asp-validation-for="FullName" class="register-error"></span>
-        </div>
+        </div> *@
+        <input type="hidden" asp-for="PhoneNumber" class="register-input" />
+        <input type="hidden" asp-for="FullName" class="register-input" />
 
         <div class="register-group">
             <label class="register-label">Password</label>

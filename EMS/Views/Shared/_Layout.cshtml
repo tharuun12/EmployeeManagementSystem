@@ -44,7 +44,7 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                             </li> *@
 
-                            @if (User.IsInRole("Admin"))
+                            @* @if (User.IsInRole("Admin"))
                             {
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-controller="Employee" asp-action="Index">Profile</a>
@@ -53,44 +53,22 @@
                                     <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="EmployeeList">Employees</a>
+                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="EmployeeList">All Employees</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="Filter">Filter</a>
+                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="Filter">Filter Employees</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Department" asp-action="Index">Departments</a>
+                                    <a class="nav-link text-dark" asp-controller="Department" asp-action="Index">Manage Departments</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-controller="Employee" asp-action="ManagersList">Managers</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Leave" asp-action="ApproveList">Leave Approval</a>
+                                    <a class="nav-link text-dark" asp-controller="Leave" asp-action="ApproveList">Leave Approvals</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-controller="Activity" asp-action="Index">Login History</a>
-                                </li>
-                                
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark"
-                                       asp-controller="Leave"
-                                       asp-action="MyLeaves"
-                                       asp-route-employeeId="@employeeId">Leave History</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Account" asp-action="ChangePassword">Reset Password</a>
-                                </li>
-                                @* <li class="nav-item">
-                                    <a href="#" class="nav-link text-dark" onclick="document.getElementById('logoutForm').submit(); return false;">Logout</a>
-                                </li>
-
-                                <form id="logoutForm" asp-controller="Account" asp-action="Logout" method="post" style="display: none;"></form> *@
-                            }
-
-                            @if (User.IsInRole("Employee"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="Index">Dashboard</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-controller="Leave" asp-action="Apply">Apply Leave</a>
@@ -104,35 +82,71 @@
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-controller="Account" asp-action="ChangePassword">Reset Password</a>
                                 </li>
-                                @* <li class="nav-item">
-                                <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline">
-                                    <button type="submit" class="btn btn-custom nav-link text-secondary-dark">Logout</button>
-                                </form> *@
-                                @* </li> *@
-                            }
-
-                            @if (User.IsInRole("Manager"))
+                            } *@
+                            @if (User.IsInRole("Admin"))
                             {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Manager" asp-action="Index">Profile</a>
+                                <!-- Profile Group -->
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-dark" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        My Profile
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="profileDropdown">
+                                        <li><a class="dropdown-item" asp-controller="Employee" asp-action="Index">View Profile</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword">Change Password</a></li>
+                                    </ul>
                                 </li>
+
+                                <!-- Dashboard Group -->
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="EmployeeList">Employees</a>
+
+                                <!-- User Management Group -->
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-dark" href="#" id="userMgmtDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        User Management
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="userMgmtDropdown">
+                                        <li><a class="dropdown-item" asp-controller="Employee" asp-action="EmployeeList">All Employees</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Employee" asp-action="ManagersList">Manage Managers</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Employee" asp-action="Filter">Filter Employees</a></li>
+                                    </ul>
                                 </li>
-                                @* <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Departments" asp-action="Index">Departments</a>
-                                </li> *@
+
+                                <!-- Department Group -->
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Manager" asp-action="ApproveList">Leave Approval</a>
+                                    <a class="nav-link text-dark" asp-controller="Department" asp-action="Index">Manage Departments</a>
+                                </li>
+
+                                <!-- Leave Management Group -->
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-dark" href="#" id="leaveMgmtDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Leave Management
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="leaveMgmtDropdown">
+                                        <li><a class="dropdown-item" asp-controller="Leave" asp-action="ApproveList">Leave Approvals</a></li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Leave" asp-action="Apply">Apply for Leave</a>
+                                        </li>
+                                        <li><a class="dropdown-item" asp-controller="Leave" asp-action="MyLeaves" asp-route-employeeId="@employeeId">My Leave History</a></li>
+                                        
+                                    </ul>
+                                </li>
+
+                                <!-- System Logs -->
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Activity" asp-action="Index">Activity Logs</a>
+                                </li>
+                            }
+
+
+                            @if (User.IsInRole("Employee"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="Index">Profile</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Leave" asp-action="Apply">Leave Apply</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Account" asp-action="ChangePassword">Reset Password</a>
+                                    <a class="nav-link text-dark" asp-controller="Leave" asp-action="Apply">Apply Leave</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link text-dark"
@@ -140,14 +154,35 @@
                                        asp-action="MyLeaves"
                                        asp-route-employeeId="@employeeId">Leave History</a>
                                 </li>
-                                @* <li class="nav-item">
-                                    <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline">
-                                        <button type="submit" class="btn btn-custom nav-link text-secondary-dark">Logout</button>
-                                    </form>
-                                </li> *@
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Account" asp-action="ChangePassword">Change Password</a>
+                                </li>
                             }
 
-                            
+                            @if (User.IsInRole("Manager"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Manager" asp-action="Index">My Profile</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Manager" asp-action="Subordinates">Team Members</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Manager" asp-action="ApproveList">Leave Approvals</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Leave" asp-action="Apply">Apply for Leave</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark"
+                                       asp-controller="Leave"
+                                       asp-action="MyLeaves"
+                                       asp-route-employeeId="@employeeId">My Leave History</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Account" asp-action="ChangePassword">Change Password</a>
+                                </li>
+                            }
                         }
                     </ul>
 

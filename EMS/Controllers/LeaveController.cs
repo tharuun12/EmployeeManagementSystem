@@ -56,11 +56,13 @@ namespace EMS.Web.Controllers
                     };
                     return View("Error", error);
                 }
-                if ( employee.LeaveBalance >= dayss)
+
+                if (dayss > 0 && employee.LeaveBalance >= dayss)
                 {
                     employee.LeaveBalance -= dayss;
                     await _context.SaveChangesAsync();
                 }
+
 
                 if (leave.Status == "Approved")
                 {

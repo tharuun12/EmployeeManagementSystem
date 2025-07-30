@@ -1,7 +1,9 @@
 ﻿using EMS; // Or your actual namespace where IEmailService is
 using EMS.ViewModels;
 using EMS.Web.Data;
+using EMS.Web.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -12,9 +14,15 @@ namespace EMS.Controllers
     public class ManagerController : Controller
     {
         private readonly AppDbContext _context;
-        public ManagerController(AppDbContext context)
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly UserManager<Users> _userManager;
+
+
+        public ManagerController(AppDbContext context, RoleManager<IdentityRole> roleManager, UserManager<Users> userManager)
         {
             _context = context;
+            _roleManager = roleManager;
+            _userManager = userManager;
         }
 
         // Email testing 
@@ -139,5 +147,29 @@ namespace EMS.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(ApproveList));
         }
+
+        [HttpGet]
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> Subordinates()
+        {
+            var userId = _userManager.GetUserId(User); // Get currently logged-in user's Identity Id
+            var user = await _userManager.FindByIdAsync(userId);
+
+            // Get the corresponding employee record using IdentityUserId
+            var manager = await _context.Employees.FirstOrDefaultAsync(e => e.UserId == userId);
+            if (manager == null)
+            {
+                TempData["ToastError"] = "Manager record not found.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            // Get all employees reporting to this manager
+            var subordinates = await _context.Employees
+                .Where(e => e.ManagerId == manager.EmployeeId)
+                .ToListAsync();
+
+            return View(subordinates); 
+        }
+
     }
 }

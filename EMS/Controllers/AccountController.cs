@@ -56,10 +56,12 @@ public class AccountController : Controller
 
         var employee = await _context.Employees
             .FirstOrDefaultAsync(e => e.Email == model.Email );
-
+        model.FullName = employee?.FullName;
+        model.PhoneNumber = employee?.PhoneNumber;
         if (employee == null)
         {
             ModelState.AddModelError("", "You are not a registered employee. Contact admin.");
+            TempData["ToastError"] = "You are not a registered employee. Please contact Admin.";
             return View(model); 
         }
 
@@ -72,7 +74,11 @@ public class AccountController : Controller
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
-
+        // Ensure user.Id is set (fetch from DB if needed)
+        if (result.Succeeded)
+        {
+            user = await _userManager.FindByEmailAsync(user.Email);
+        }
         var LoginLogs = new LoginActivityLogs
         {
             userId = user.Id,
@@ -90,6 +96,7 @@ public class AccountController : Controller
         {
             await _userManager.AddToRoleAsync(user, employee.Role);
             HttpContext.Session.SetString("LoginTime", DateTime.UtcNow.ToString());
+            TempData["ToastSuccess"] = "Registration successful. Please log in.";
 
             return RedirectToAction("Login");
         }
@@ -98,6 +105,7 @@ public class AccountController : Controller
         {
             ModelState.AddModelError("", error.Description);
         }
+        TempData["ToastError"] = "Registration failed. Please correct the errors.";
 
         return View(model);
     }
@@ -107,13 +115,17 @@ public class AccountController : Controller
     public async Task<IActionResult> Login(LoginViewModel model)
     {
         if (!ModelState.IsValid)
+        {
+            TempData["ToastError"] = "Please fill in all required fields.";
             return View(model);
+        }
 
         var user = await _userManager.FindByEmailAsync(model.Email);
 
         // Check if user exists
         if (user == null)
         {
+            TempData["ToastError"] = "Invalid login attempt. User not found.";
             ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             return View(model);
         }
@@ -121,6 +133,7 @@ public class AccountController : Controller
         // Check if user is locked out
         if (user.LockoutEnabled && user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow)
         {
+            TempData["ToastError"] = "This account is locked. Contact administrator.";
             ModelState.AddModelError(string.Empty, "This account has been disabled. Please contact administrator.");
             return View(model);
         }
@@ -128,6 +141,7 @@ public class AccountController : Controller
         // Check if password is correct
         if (!await _userManager.CheckPasswordAsync(user, model.Password))
         {
+            TempData["ToastError"] = "Invalid login attempt. Please check your password.";
             ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             return View(model);
         }
@@ -137,11 +151,11 @@ public class AccountController : Controller
 
         // JWT Claims
         var authClaims = new List<Claim>
-    {
-        new Claim(ClaimTypes.Name, user.UserName),
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        new Claim(ClaimTypes.NameIdentifier, user.Id)
-    };
+        {
+            new Claim(ClaimTypes.Name, user.UserName),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.NameIdentifier, user.Id)
+        };
         authClaims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:Key"]));
@@ -172,7 +186,7 @@ public class AccountController : Controller
         var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Email == model.Email);
         if (employee != null)
         {
-            var LoginLogs = new LoginActivityLogs
+            var log = new LoginActivityLogs
             {
                 userId = user.Id,
                 LoginTime = DateTime.UtcNow,
@@ -180,25 +194,23 @@ public class AccountController : Controller
                 employeeId = employee.EmployeeId,
                 Email = employee.Email
             };
-            _context.LoginActivityLogs.Add(LoginLogs);
-            await _context.SaveChangesAsync();
-        }
+            _context.LoginActivityLogs.Add(log);
 
-        // Save UserId in employee if missing
-        if (employee != null && string.IsNullOrEmpty(employee.UserId))
-        {
-            employee.UserId = user.Id;
-            _context.Employees.Update(employee);
-            await _context.SaveChangesAsync();
-        }
+            if (string.IsNullOrEmpty(employee.UserId))
+            {
+                employee.UserId = user.Id;
+                _context.Employees.Update(employee);
+            }
 
-        HttpContext.Session.SetString("LoginTime", DateTime.UtcNow.ToString());
-        if (employee != null)
+            await _context.SaveChangesAsync();
+
+            HttpContext.Session.SetString("LoginTime", DateTime.UtcNow.ToString());
             HttpContext.Session.SetInt32("EmployeeId", employee.EmployeeId);
-
+        }
+        TempData["ToastSuccess"] = "Login successful!";
         // Redirect based on role
         if (roles.Contains("Admin"))
-            return RedirectToAction("Index", "Employee");
+            return RedirectToAction("Index", "Manager");
         else if (roles.Contains("Manager"))
             return RedirectToAction("Index", "Manager");
         else

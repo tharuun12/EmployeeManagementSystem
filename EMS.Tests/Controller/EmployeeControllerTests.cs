@@ -75,10 +75,15 @@ namespace EMS.Tests.Controller
             context.Department.Add(new Department { DepartmentId = 1, DepartmentName = "IT" });
             context.SaveChanges();
 
-            var roles = new List<IdentityRole> { new IdentityRole("Employee") };
-
+            var roles = new List<IdentityRole>
+                {
+                    new IdentityRole("Admin"),
+                    new IdentityRole("Manager"),
+                    new IdentityRole("Employee")
+                };
             var roleManagerMock = MockRoleManager();
             roleManagerMock.Setup(r => r.Roles).Returns(roles.AsQueryable());
+            // Add this line to mock ToListAsync for Roles:
             roleManagerMock.Setup(r => r.Roles.ToListAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(roles);
             var controller = GetController(context, roleManagerMock, MockUserManager(), GetUserWithRole("1", "Admin"));
@@ -138,7 +143,7 @@ namespace EMS.Tests.Controller
 
             var result = await controller.Create(model);
             var viewResult = Assert.IsType<ViewResult>(result);
-            Assert.True(controller.TempData.ContainsKey("ToastMessage"));
+            Assert.True(controller.TempData.ContainsKey("ToastError"));
         }
 
         [Fact]
@@ -454,7 +459,7 @@ namespace EMS.Tests.Controller
 
             var result = await controller.Create(model);
             var viewResult = Assert.IsType<ViewResult>(result);
-            Assert.True(controller.TempData.ContainsKey("ToastMessage"));
+            Assert.True(controller.TempData.ContainsKey("ToastError"));
         }
 
         [Fact]
@@ -488,7 +493,7 @@ namespace EMS.Tests.Controller
             var result = await controller.Create(model);
             var viewResult = Assert.IsType<ViewResult>(result);
             // Should not allow creation, so no new manager assigned
-            Assert.True(controller.TempData.ContainsKey("ToastMessage"));
+            Assert.True(controller.TempData.ContainsKey("ToastError"));
         }
 
         [Fact]

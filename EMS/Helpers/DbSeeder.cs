@@ -28,19 +28,18 @@ namespace EMS.Helpers
 
                 // 2. Create Department if it doesn't exist
                 var adminDepartment = await dbContext.Department.FirstOrDefaultAsync(d => d.DepartmentId == 1);
-                if (adminDepartment == null)
+                var departmentCount = await dbContext.Department.CountAsync();
+                if (departmentCount < 1)
                 {
                     adminDepartment = new Department
                     {
-                        DepartmentName = "Admin Department"
-                        //DepartmentName = "Default Admin Department"
+                        DepartmentName = " Default Admin Department"
                     };
                     dbContext.Department.Add(adminDepartment);
                     await dbContext.SaveChangesAsync();
                 }
 
-
-                // 2. Create Admin User if not exists
+                // 3. Create Admin User if not exists
                 var adminUser = await userManager.FindByEmailAsync(adminEmail);
                 if (adminUser == null)
                 {
@@ -59,19 +58,27 @@ namespace EMS.Helpers
                         await userManager.AddToRoleAsync(adminUser, adminRole);
                     }
                 }
+                else
+                {
+                    // Ensure FullName and PhoneNumber are not null for existing user
+                    if (string.IsNullOrEmpty(adminUser.FullName))
+                        adminUser.FullName = "Default Admin";
+                    if (string.IsNullOrEmpty(adminUser.PhoneNumber))
+                        adminUser.PhoneNumber = "9999999999";
+                }
 
-                // 3. Insert Admin into Employee table if not exists
-                bool employeeExists = await dbContext.Employees.AnyAsync(e => e.Email == adminEmail);
+                // 4. Insert Admin into Employee table if not exists
+                bool employeeExists = await dbContext.Employees.AnyAsync(e => e.Role == "Admin");
                 if (!employeeExists)
                 {
                     var employee = new Employee
                     {
-                        FullName = adminUser.FullName,
-                        Email = adminUser.Email,
-                        PhoneNumber = adminUser.PhoneNumber,
+                        FullName = adminUser.FullName ?? "Default Admin",
+                        Email = adminUser.Email ?? adminEmail,
+                        PhoneNumber = adminUser.PhoneNumber ?? "9999999999",
                         Role = "Admin",
                         IsActive = true,
-                        DepartmentId = 1, // Assume default DepartmentId 1
+                        DepartmentId = adminDepartment.DepartmentId,
                         ManagerId = null,
                         UserId = adminUser.Id,
                         LeaveBalance = 30 // Default leave balance
