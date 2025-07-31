@@ -13,18 +13,15 @@ namespace EMS.Tests.Controllers
         private AppDbContext GetDbContextWithTestData()
         {
             var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) // unique per test run
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) 
                 .Options;
 
             var context = new AppDbContext(options);
 
-            // Seed Departments
             var hrDept = new Department { DepartmentId = 1, DepartmentName = "HR", Employees = new List<Employee>() };
             var itDept = new Department { DepartmentId = 2, DepartmentName = "IT", Employees = new List<Employee>() };
             context.Department.AddRange(hrDept, itDept);
 
-            // Seed Employees
-            // Seed Employees
             var employees = new List<Employee>
                 {
                     new Employee
@@ -88,28 +85,22 @@ namespace EMS.Tests.Controllers
         [Fact]
         public async Task Index_ReturnsCorrectDashboardAnalytics()
         {
-            // Arrange
             var context = GetDbContextWithTestData();
             var controller = new DashboardController(context);
 
-            // Act
             var result = await controller.Index();
 
-            // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
             var model = Assert.IsAssignableFrom<List<DepartmentStatsViewModel>>(viewResult.Model);
 
-            // Verify ViewBag values
             Assert.Equal(5, controller.ViewBag.TotalEmployees);
             Assert.Equal(3, controller.ViewBag.ActiveEmployees);
             Assert.Equal(2, controller.ViewBag.TotalDepartments);
 
-            // Verify recent employees (should return top 5 regardless of order)
             var recent = controller.ViewBag.RecentEmployees as List<Employee>;
             Assert.NotNull(recent);
             Assert.Equal(5, recent.Count);
 
-            // Verify department stats
             Assert.Equal(2, model.Count);
             var hrStats = model.FirstOrDefault(d => d.Name == "HR");
             var itStats = model.FirstOrDefault(d => d.Name == "IT");
@@ -117,8 +108,8 @@ namespace EMS.Tests.Controllers
             Assert.NotNull(hrStats);
             Assert.NotNull(itStats);
 
-            Assert.Equal(3, hrStats.EmployeeCount);  // Alice, Charlie, Eva
-            Assert.Equal(2, itStats.EmployeeCount);  // Bob, David
+            Assert.Equal(3, hrStats.EmployeeCount);  
+            Assert.Equal(2, itStats.EmployeeCount);  
         }
     }
 }

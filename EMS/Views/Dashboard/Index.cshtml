@@ -24,25 +24,12 @@
     </div>
 </div>
 
-<!-- Existing Summary Chart -->
-
-@* <!-- Pie Chart for Active Employees by Department -->
-<h4 class="mt-5">📊 Active Employees by Department</h4>
-<canvas id="activeEmployeesChart" height="100" class="mb-5"></canvas>
-
-<!-- Doughnut Chart for Department vs Employee -->
-<h4 class="mt-5">🏢 Department vs Employee Distribution</h4>
-<canvas id="departmentDistributionChart" height="100"></canvas> *@
 <div style="display: flex; gap: 30px; justify-content: center; flex-wrap: wrap;">
     <div>
-        <p>Employee's Department Wise</p>
         <canvas id="activeEmployeesChart" width="400" height="400" class="chart-canvas"></canvas>
     </div>
     <div>
-        <p></p>
         <canvas id="summaryChart" width="400" height="400" class="chart-canvas"></canvas>
-
-        @* <canvas id="departmentDistributionChart" width="400" height="400" class="chart-canvas"></canvas> *@
     </div>
 </div>
 
@@ -65,7 +52,6 @@
                 <td>@emp.Email</td>
                 <td>@emp.PhoneNumber</td>
                 <td>@emp.Role</td>
-                @* <td>@emp.CreatedDate.ToString("dd MMM yyyy")</td> *@
             </tr>
         }
     </tbody>
@@ -79,7 +65,6 @@
             <th>No. of Employees</th>
         </tr>
     </thead>
-    @* Have to solve this issue of returning the null value even there is a persent of data  *@
     <tbody>
         @foreach (var stat in Model)
         {
@@ -96,28 +81,49 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        // Summary Bar Chart
         const ctx = document.getElementById('summaryChart').getContext('2d');
         new Chart(ctx, {
-            type: 'bar',
+            type: 'doughnut',
             data: {
-                labels: ['Total Employees', 'Active Employees', 'Departments'],
+                labels: ['Approved', 'Pending', 'Rejected'],
                 datasets: [{
-                    label: 'EMS Overview',
-                    data: [@ViewBag.TotalEmployees, @ViewBag.ActiveEmployees, @ViewBag.TotalDepartments],
-                    backgroundColor: ['#3498db', '#2ecc71', '#9b59b6'],
-                    borderWidth: 1
+                    label: 'Leave Requests',
+                    data: [@ViewBag.ApprovedLeaves, @ViewBag.PendingLeaves, @ViewBag.RejectedLeaves],
+                    backgroundColor: [
+                        '#2ecc71', 
+                        '#f39c12', 
+                        '#e74c3c'  
+                    ],
+                    borderWidth: 3,
+                    borderColor: '#ffffff'
                 }]
             },
             options: {
                 responsive: true,
-                scales: {
-                    y: { beginAtZero: true }
+                cutout: '50%',
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Leave Request Status',
+                        font: { size: 16, weight: 'bold' }
+                    },
+                    legend: { 
+                        position: 'bottom',
+                        labels: { padding: 15 }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = @ViewBag.TotalLeaveRequests;
+                                const percentage = ((context.raw / total) * 100).toFixed(1);
+                                return context.label + ': ' + context.raw + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
                 }
             }
         });
 
-        // Pie Chart
         const activeLabels = @Html.Raw(Json.Serialize(Model.Select(d => d.Name)));
         const activeData = @Html.Raw(Json.Serialize(Model.Select(d => d.EmployeeCount)));
 
@@ -130,45 +136,22 @@
                     label: 'Active Employees',
                     data: activeData,
                     backgroundColor: [
-                        '#4e79a7', // Cool Blue
-                        '#f28e2c', // Orange
-                        '#e15759', // Soft Red
-                        '#76b7b2', // Teal
-                        '#59a14f', // Green
-                        '#edc948', // Mustard Yellow
-                        '#b07aa1', // Purple
-                        '#9c755f'  // Brownish
+                        '#4e79a7', '#f28e2c', '#e15759', '#76b7b2',
+                        '#59a14f', '#edc948', '#b07aa1', '#9c755f'
                     ]
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { position: 'bottom' }
-                }
-            }
-        });
-
-        // Doughnut Chart
-        const ctxDonut = document.getElementById('departmentDistributionChart').getContext('2d');
-        new Chart(ctxDonut, {
-            type: 'doughnut',
-            data: {
-                labels: ['Total Departments', 'Total Employees'],
-                datasets: [{
-                    label: 'Distribution',
-                    data: [@ViewBag.TotalDepartments, @ViewBag.TotalEmployees],
-                    backgroundColor: ['#1f77b4', '#17becf'],
-
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'bottom' }
+                    legend: { position: 'bottom' },
+                    title: {
+                        display: true,
+                        text: 'Active Employee Department Wise',
+                        font: { size: 16, weight: 'bold' }
+                    }
                 }
             }
         });
     </script>
 }
-

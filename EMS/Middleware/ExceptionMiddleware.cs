@@ -1,37 +1,39 @@
-﻿public class ExceptionMiddleware
+﻿namespace EMS.Middleware
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<ExceptionMiddleware> _logger;
-
-    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
+    public class ExceptionMiddleware
     {
-        _next = next;
-        _logger = logger;
-    }
+        private readonly RequestDelegate _next;
+        private readonly ILogger<ExceptionMiddleware> _logger;
 
-    public async Task InvokeAsync(HttpContext httpContext)
-    {
-        try
+        public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
         {
-            await _next(httpContext); // Continue pipeline
+            _next = next;
+            _logger = logger;
         }
-        catch (Exception ex)
+        public async Task InvokeAsync(HttpContext httpContext)
         {
-            _logger.LogError(ex, "Unhandled Exception Occurred"); // Logs full stack trace
-            await HandleExceptionAsync(httpContext, ex);
+            try
+            {
+                await _next(httpContext); 
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unhandled Exception Occurred"); 
+                await HandleExceptionAsync(httpContext, ex);
+            }
+        }
+        private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+        {
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = 500;
+
+            return context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new
+            {
+                StatusCode = context.Response.StatusCode,
+                Message = "An unexpected error occurred. Please try again later.",
+                Error = exception.Message  
+            }));
         }
     }
 
-    private static Task HandleExceptionAsync(HttpContext context, Exception exception)
-    {
-        context.Response.ContentType = "application/json";
-        context.Response.StatusCode = 500;
-
-        return context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new
-        {
-            StatusCode = context.Response.StatusCode,
-            Message = "An unexpected error occurred. Please try again later.",
-            Error = exception.Message  // Optional: add in development only
-        }));
-    }
 }

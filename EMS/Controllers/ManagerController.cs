@@ -17,34 +17,32 @@ namespace EMS.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<Users> _userManager;
 
-
         public ManagerController(AppDbContext context, RoleManager<IdentityRole> roleManager, UserManager<Users> userManager)
         {
             _context = context;
             _roleManager = roleManager;
             _userManager = userManager;
         }
+        private static int CalculateBusinessDays(DateTime startDate, DateTime endDate)
+        {
+            if (startDate > endDate)
+                return 0;
 
-        // Email testing 
+            int businessDays = 0;
+            DateTime current = startDate;
 
-        //private readonly IEmailService _emailService;
+            while (current <= endDate)
+            {
+                // Check if current day is not Saturday (6) or Sunday (0)
+                if (current.DayOfWeek != DayOfWeek.Saturday && current.DayOfWeek != DayOfWeek.Sunday)
+                {
+                    businessDays++;
+                }
+                current = current.AddDays(1);
+            }
 
-        //public ManagerController(IEmailService emailService)
-        //{
-        //    _emailService = emailService;
-        //}
-
-        //public IActionResult Index()
-        //{
-        //    return View();
-        //}
-
-        //[HttpGet]
-        //public async Task<IActionResult> TestEmail()
-        //{
-        //    await _emailService.SendEmailAsync("tharuunmohan@gmail.com", "Test Email", "This is a test email from EMS.");
-        //    return Ok("✅ Test email sent successfully.");
-        //}
+            return businessDays;
+        }
 
         public async Task<IActionResult> Index()
         {
@@ -78,7 +76,6 @@ namespace EMS.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // Get the current logged-in employee (manager)
             var manager = await _context.Employees
                 .FirstOrDefaultAsync(e => e.UserId == userId);
 
@@ -87,13 +84,11 @@ namespace EMS.Controllers
                 return NotFound("Manager not found.");
             }
 
-            // Get all employees under this manager
             var teamEmployeeIds = await _context.Employees
                 .Where(e => e.ManagerId == manager.EmployeeId)
                 .Select(e => e.EmployeeId)
                 .ToListAsync();
 
-            // Get pending leave requests for these employees
             var leaves = await _context.LeaveRequests
                 .Include(l => l.Employee)
                 .Where(l => l.Status == "Pending" && teamEmployeeIds.Contains(l.EmployeeId))
@@ -132,12 +127,12 @@ namespace EMS.Controllers
                 var balance = await _context.LeaveBalances.FirstOrDefaultAsync(b => b.EmployeeId == leave.EmployeeId);
                 if (balance != null)
                 {
-                    int days = (leave.EndDate - leave.StartDate).Days + 1;
+                    int days = CalculateBusinessDays(leave.StartDate, leave.EndDate)+1;
 
                     if (balance.LeavesTaken + days > balance.TotalLeaves)
                     {
-                        ModelState.AddModelError("", "Insufficient leave balance.");
-                        return View(leave);
+                        TempData["ToastError"] = "Insufficient leave balance.";
+                        return RedirectToAction("ApproveList", "Manager");
                     }
 
                     balance.LeavesTaken += days;
@@ -152,10 +147,9 @@ namespace EMS.Controllers
         [Authorize(Roles = "Manager")]
         public async Task<IActionResult> Subordinates()
         {
-            var userId = _userManager.GetUserId(User); // Get currently logged-in user's Identity Id
+            var userId = _userManager.GetUserId(User); 
             var user = await _userManager.FindByIdAsync(userId);
 
-            // Get the corresponding employee record using IdentityUserId
             var manager = await _context.Employees.FirstOrDefaultAsync(e => e.UserId == userId);
             if (manager == null)
             {
@@ -163,7 +157,6 @@ namespace EMS.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            // Get all employees reporting to this manager
             var subordinates = await _context.Employees
                 .Where(e => e.ManagerId == manager.EmployeeId)
                 .ToListAsync();

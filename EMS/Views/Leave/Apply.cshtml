@@ -6,16 +6,6 @@
 <h2 class="text-center">Apply for Leave</h2>
 
 <form asp-action="Apply" method="post" class="create-form">
-    @* <div class="form-group">
-        <label asp-for="EmployeeId">Employee</label>
-        <select asp-for="EmployeeId" class="form-control">
-            @foreach (var emp in employees!)
-            {
-                <option value="@emp.EmployeeId">@emp.FullName</option>
-            }
-        </select>
-        <span asp-validation-for="EmployeeId" class="text-danger"></span>
-    </div> *@
     <div class="form-group">
         <label asp-for="EmployeeId">Employee Name</label>
 

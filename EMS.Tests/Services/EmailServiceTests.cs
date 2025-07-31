@@ -22,11 +22,9 @@ namespace EMS.Tests.Services
         [Fact]
         public async Task SendEmailAsync_WithValidParameters_ThrowsIfSmtpNotAvailable()
         {
-            // Arrange
             var options = Options.Create(GetValidSettings());
             var service = new EmailService(options);
 
-            // Act & Assert
             // Since no SMTP server is available, expect SmtpException or InvalidOperationException
             await Assert.ThrowsAnyAsync<Exception>(() =>
                 service.SendEmailAsync("to@example.com", "Test Subject", "Test Body"));
@@ -41,11 +39,9 @@ namespace EMS.Tests.Services
         [InlineData("to@example.com", "Subject", "")]
         public async Task SendEmailAsync_WithInvalidParameters_ThrowsArgumentException(string to, string subject, string body)
         {
-            // Arrange
             var options = Options.Create(GetValidSettings());
             var service = new EmailService(options);
 
-            // Act & Assert
             if (string.IsNullOrWhiteSpace(to) || string.IsNullOrWhiteSpace(subject) || string.IsNullOrWhiteSpace(body))
             {
                 // If parameters are invalid, we expect ArgumentException, but if the implementation does not check before sending,
@@ -63,22 +59,18 @@ namespace EMS.Tests.Services
         [Fact]
         public void EmailService_CanBeConstructed_WithValidOptions()
         {
-            // Arrange & Act
             var options = Options.Create(GetValidSettings());
             var service = new EmailService(options);
 
-            // Assert
             Assert.NotNull(service);
         }
 
         [Fact]
         public async Task SendEmailAsync_WhenSmtpThrows_ExceptionIsLoggedAndRethrown()
         {
-            // Arrange
             var options = Options.Create(GetValidSettings());
             var service = new EmailService(options);
 
-            // Act & Assert
             // This will throw because the SMTP server is not available, but should also log the error
             var ex = await Record.ExceptionAsync(() =>
                 service.SendEmailAsync("to@example.com", "Test", "Body"));

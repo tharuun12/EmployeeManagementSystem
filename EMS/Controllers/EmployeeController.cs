@@ -49,7 +49,7 @@ namespace EMS.Web.Controllers
             ViewBag.Managers = await _context.Employees.ToListAsync();
             ViewBag.Roles = (await _roleManager.Roles.ToListAsync()).Select(r => r.Name).ToList(); // just role names
         }
-        
+
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
@@ -63,41 +63,39 @@ namespace EMS.Web.Controllers
 
             var normalizedEmail = model.Email.Trim().ToLower();
 
+            // Check if email already exists
             var existingEmployee = await _context.Employees
                 .FirstOrDefaultAsync(e => e.Email.ToLower().Trim() == normalizedEmail);
 
             if (existingEmployee != null)
             {
-                TempData["ToastSuccess"] = "A user with this Email already exists.";
+                TempData["ToastError"] = "A user with this Email already exists.";
                 await LoadDropdownsAsync();
                 return View(model);
             }
 
-            // Validation: Role & Department dependency
-            if (model.Role == "Employee")
+            // Get department information
+            var department = await _context.Department.FindAsync(model.DepartmentId);
+            if (department == null)
             {
-                var department = await _context.Department
-                    .FirstOrDefaultAsync(d => d.DepartmentId == model.DepartmentId);
-
-                if (department?.ManagerId == null)
-                {
-                    TempData["ToastError"] = "Please assign a Manager to the Department first.";
-                    await LoadDropdownsAsync();
-                    return View(model);
-                }
+                TempData["ToastError"] = "Selected department does not exist.";
+                await LoadDropdownsAsync();
+                return View(model);
             }
-            else if (model.Role == "Manager")
-            {
-                var department = await _context.Department.FirstOrDefaultAsync(d => d.DepartmentId == model.DepartmentId);
 
-                if (department != null && department.ManagerId != null)
+            // Role-specific validation and logic
+            if (model.Role == "Manager")
+            {
+                // Check if department already has a manager
+                if (department.ManagerId != null)
                 {
-                    TempData["ToastError"] = "This department already has a manager assigned.";
+                    TempData["ToastError"] = "This department already has a manager assigned. Please change the current manager to employee role first.";
                     await LoadDropdownsAsync();
                     return View(model);
                 }
-                var adminExists = await _context.Employees.AnyAsync(e => e.Role == "Admin");
 
+                // Ensure admin exists before creating manager
+                var adminExists = await _context.Employees.AnyAsync(e => e.Role == "Admin");
                 if (!adminExists)
                 {
                     TempData["ToastError"] = "Please create an Admin before adding a Manager.";
@@ -105,8 +103,18 @@ namespace EMS.Web.Controllers
                     return View(model);
                 }
             }
+            else if (model.Role == "Employee")
+            {
+                // Employees must have a manager in their department
+                if (department.ManagerId == null)
+                {
+                    TempData["ToastError"] = "Please assign a Manager to the Department first.";
+                    await LoadDropdownsAsync();
+                    return View(model);
+                }
+            }
 
-            // Fetch Role & Department
+            // Get role information
             var role = await _roleManager.FindByNameAsync(model.Role);
             if (role == null)
             {
@@ -115,10 +123,7 @@ namespace EMS.Web.Controllers
                 return View(model);
             }
 
-            var departmentInfo = await _context.Department
-                .FirstOrDefaultAsync(d => d.DepartmentId == model.DepartmentId);
-
-            // Prepare Employee
+            // Create new employee
             var employee = new Employee
             {
                 FullName = model.FullName,
@@ -128,18 +133,27 @@ namespace EMS.Web.Controllers
                 RoleID = role.Id,
                 IsActive = model.IsActive,
                 DepartmentId = model.DepartmentId,
-                ManagerId = departmentInfo?.ManagerId,
+                ManagerId = model.Role == "Manager" ? null : department.ManagerId,
                 LeaveBalance = model.LeaveBalance
             };
 
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
 
-            // Update Department if Role is Manager
-            if (model.Role == "Manager" && departmentInfo != null)
+            if (model.Role == "Manager")
             {
-                departmentInfo.ManagerId = employee.EmployeeId;
-                departmentInfo.ManagerName = employee.FullName;
+                department.ManagerId = employee.EmployeeId;
+                department.ManagerName = employee.FullName;
+
+                var employeesInDepartment = await _context.Employees
+                    .Where(e => e.DepartmentId == model.DepartmentId && e.EmployeeId != employee.EmployeeId)
+                    .ToListAsync();
+
+                foreach (var emp in employeesInDepartment)
+                {
+                    emp.ManagerId = employee.EmployeeId;
+                }
+
                 await _context.SaveChangesAsync();
             }
 
@@ -159,6 +173,13 @@ namespace EMS.Web.Controllers
                 TimeStamp = DateTime.Now
             };
 
+            var EmployeeLeave = new LeaveBalance
+            {
+                EmployeeId = employee.EmployeeId,
+                TotalLeaves = model.LeaveBalance
+            };
+
+            _context.LeaveBalances.Add(EmployeeLeave);
             _context.EmployeeLog.Add(employeeLog);
             await _context.SaveChangesAsync();
 
@@ -198,85 +219,132 @@ namespace EMS.Web.Controllers
                     if (existingEmployee == null)
                         return NotFound();
 
+                    // Store original state
                     bool wasManager = existingEmployee.Role == "Manager";
+                    bool willBeManager = employee.Role == "Manager";
                     int oldDepartmentId = existingEmployee.DepartmentId;
+                    int newDepartmentId = employee.DepartmentId;
 
+                    // Get the new department
                     var newDepartment = await _context.Department
-                        .FirstOrDefaultAsync(d => d.DepartmentId == employee.DepartmentId);
+                        .FirstOrDefaultAsync(d => d.DepartmentId == newDepartmentId);
 
-                    employee.ManagerId = newDepartment?.ManagerId;
+                    if (newDepartment == null)
+                    {
+                        TempData["ToastError"] = "Selected department does not exist.";
+                        ViewBag.Departments = await _context.Department.ToListAsync();
+                        ViewBag.Roles = await _roleManager.Roles.ToListAsync();
+                        return View(employee);
+                    }
+
+                    // Validation for role changes
+                    if (willBeManager && !wasManager)
+                    {
+                        if (newDepartment.ManagerId != null && newDepartment.ManagerId != id)
+                        {
+                            TempData["ToastError"] = "This department already has a manager assigned. Please change the current manager to employee role first.";
+                            ViewBag.Departments = await _context.Department.ToListAsync();
+                            ViewBag.Roles = await _roleManager.Roles.ToListAsync();
+                            return View(employee);
+                        }
+                    }
+                    else if (willBeManager && wasManager && newDepartmentId != oldDepartmentId)
+                    {
+                        if (newDepartment.ManagerId != null && newDepartment.ManagerId != id)
+                        {
+                            TempData["ToastError"] = "The target department already has a manager assigned.";
+                            ViewBag.Departments = await _context.Department.ToListAsync();
+                            ViewBag.Roles = await _roleManager.Roles.ToListAsync();
+                            return View(employee);
+                        }
+                    }
+                    else if (!willBeManager && employee.Role == "Employee")
+                    {
+                        if (newDepartment.ManagerId == null)
+                        {
+                            TempData["ToastError"] = "Cannot assign employee to a department without a manager. Please assign a manager to the department first.";
+                            ViewBag.Departments = await _context.Department.ToListAsync();
+                            ViewBag.Roles = await _roleManager.Roles.ToListAsync();
+                            return View(employee);
+                        }
+                    }
 
                     // Update role ID
                     var roleId = (await _roleManager.FindByNameAsync(employee.Role))?.Id;
-                    employee.RoleID = roleId;
+                    if (roleId == null)
+                    {
+                        TempData["ToastError"] = "Selected role is invalid.";
+                        ViewBag.Departments = await _context.Department.ToListAsync();
+                        ViewBag.Roles = await _roleManager.Roles.ToListAsync();
+                        return View(employee);
+                    }
 
-                    // Update fields
+                    if (employee.LeaveBalance != existingEmployee.LeaveBalance)
+                    {
+                        var updateTotalLeave = await _context.LeaveBalances.FirstOrDefaultAsync(e => e.EmployeeId == employee.EmployeeId);
+                        if (updateTotalLeave != null)
+                        {
+                            updateTotalLeave.TotalLeaves = employee.LeaveBalance + updateTotalLeave.TotalLeaves;
+                            _context.LeaveBalances.Update(updateTotalLeave);
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+
+                    // Update basic employee fields
                     existingEmployee.FullName = employee.FullName;
                     existingEmployee.Email = employee.Email;
                     existingEmployee.PhoneNumber = employee.PhoneNumber;
                     existingEmployee.Role = employee.Role;
                     existingEmployee.RoleID = roleId;
                     existingEmployee.IsActive = employee.IsActive;
-                    existingEmployee.DepartmentId = employee.DepartmentId;
-                    existingEmployee.ManagerId = employee.ManagerId;
+                    existingEmployee.DepartmentId = newDepartmentId;
+                    existingEmployee.LeaveBalance = employee.LeaveBalance;
 
-                    if (employee.Role == "Manager")
+                    // Handle Manager ID assignment
+                    if (willBeManager)
                     {
-                        // Assign this employee as the manager in the new department
-                        if (newDepartment != null)
-                        {
-                            newDepartment.ManagerId = existingEmployee.EmployeeId;
-                            newDepartment.ManagerName = existingEmployee.FullName;
-
-                            // Update all employees in the department to reflect this manager
-                            var employeesInDept = await _context.Employees
-                                .Where(e => e.DepartmentId == employee.DepartmentId && e.EmployeeId != employee.EmployeeId)
-                                .ToListAsync();
-
-                            foreach (var emp in employeesInDept)
-                            {
-                                emp.ManagerId = employee.EmployeeId;
-                            }
-                        }
-
-                        // If department changed, clear manager from old department
-                        if (oldDepartmentId != employee.DepartmentId)
-                        {
-                            var oldDepartment = await _context.Department
-                                .FirstOrDefaultAsync(d => d.DepartmentId == oldDepartmentId);
-
-                            if (oldDepartment != null && oldDepartment.ManagerId == existingEmployee.EmployeeId)
-                            {
-                                oldDepartment.ManagerId = null;
-                                oldDepartment.ManagerName = null;
-                            }
-                        }
+                        existingEmployee.ManagerId = null; 
                     }
-                    else if (wasManager && employee.Role != "Manager")
+                    else
                     {
-                        // If demoted, remove as manager from all departments
-                        var deptsManaged = await _context.Department
-                            .Where(d => d.ManagerId == employee.EmployeeId)
-                            .ToListAsync();
-
-                        foreach (var dept in deptsManaged)
-                        {
-                            dept.ManagerId = null;
-                            dept.ManagerName = null;
-                        }
-
-                        // Also clear their subordinates
-                        var employeesManaged = await _context.Employees
-                            .Where(e => e.ManagerId == employee.EmployeeId)
-                            .ToListAsync();
-
-                        foreach (var emp in employeesManaged)
-                        {
-                            emp.ManagerId = null;
-                        }
+                        existingEmployee.ManagerId = newDepartment.ManagerId; 
                     }
 
+                    // Handle role transition logic
+                    if (wasManager && !willBeManager)
+                    {
+                        await HandleManagerDemotion(id);
+                    }
+                    else if (!wasManager && willBeManager)
+                    {
+                        await HandleManagerPromotion(id, existingEmployee.FullName, newDepartmentId);
+                    }
+                    else if (wasManager && willBeManager && oldDepartmentId != newDepartmentId)
+                    {
+                        await HandleManagerDepartmentChange(id, existingEmployee.FullName, oldDepartmentId, newDepartmentId);
+                    }
+
+                    // Create Employee Log
+                    var employeeLog = new EmployeeLog
+                    {
+                        EmployeeId = existingEmployee.EmployeeId,
+                        FullName = existingEmployee.FullName,
+                        Email = existingEmployee.Email,
+                        PhoneNumber = existingEmployee.PhoneNumber,
+                        Role = existingEmployee.Role,
+                        RoleID = existingEmployee.RoleID,
+                        IsActive = existingEmployee.IsActive,
+                        DepartmentId = existingEmployee.DepartmentId,
+                        ManagerId = existingEmployee.ManagerId,
+                        Operation = "Updated",
+                        TimeStamp = DateTime.Now
+                    };
+
+                    _context.EmployeeLog.Add(employeeLog);
                     await _context.SaveChangesAsync();
+
+                    TempData["ToastSuccess"] = "Employee updated successfully!";
+                    return RedirectToAction(nameof(EmployeeList));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -285,13 +353,103 @@ namespace EMS.Web.Controllers
                     else
                         throw;
                 }
-
-                return RedirectToAction(nameof(EmployeeList));
             }
 
             ViewBag.Departments = await _context.Department.ToListAsync();
             ViewBag.Roles = await _roleManager.Roles.ToListAsync();
             return View(employee);
+        }
+
+        // Helper method to handle manager demotion
+        private async Task HandleManagerDemotion(int employeeId)
+        {
+            var departmentsManaged = await _context.Department
+                .Where(d => d.ManagerId == employeeId)
+                .ToListAsync();
+
+            foreach (var dept in departmentsManaged)
+            {
+                dept.ManagerId = null;
+                dept.ManagerName = null;
+
+                _context.departmentLogs.Add(new DepartmentLogs
+                {
+                    DepartmentId = dept.DepartmentId,
+                    DepartmentName = dept.DepartmentName,
+                    ManagerId = null,
+                    Operation = "Manager Demoted",
+                    TimeStamp = DateTime.Now
+                });
+            }
+
+            var subordinates = await _context.Employees
+                .Where(e => e.ManagerId == employeeId)
+                .ToListAsync();
+
+            foreach (var subordinate in subordinates)
+            {
+                subordinate.ManagerId = null;
+            }
+        }
+
+        // Helper method to handle manager promotion
+        private async Task HandleManagerPromotion(int employeeId, string employeeName, int departmentId)
+        {
+            var department = await _context.Department.FindAsync(departmentId);
+            if (department != null)
+            {
+                department.ManagerId = employeeId;
+                department.ManagerName = employeeName;
+
+                var employeesInDepartment = await _context.Employees
+                    .Where(e => e.DepartmentId == departmentId && e.EmployeeId != employeeId)
+                    .ToListAsync();
+
+                foreach (var emp in employeesInDepartment)
+                {
+                    emp.ManagerId = employeeId;
+                }
+
+                _context.departmentLogs.Add(new DepartmentLogs
+                {
+                    DepartmentId = department.DepartmentId,
+                    DepartmentName = department.DepartmentName,
+                    ManagerId = employeeId,
+                    Operation = "Manager Assigned",
+                    TimeStamp = DateTime.Now
+                });
+            }
+        }
+
+        // Helper method to handle manager department change
+        private async Task HandleManagerDepartmentChange(int employeeId, string employeeName, int oldDepartmentId, int newDepartmentId)
+        {
+            var oldDepartment = await _context.Department.FindAsync(oldDepartmentId);
+            if (oldDepartment != null && oldDepartment.ManagerId == employeeId)
+            {
+                oldDepartment.ManagerId = null;
+                oldDepartment.ManagerName = null;
+
+                var oldDepartmentEmployees = await _context.Employees
+                    .Where(e => e.DepartmentId == oldDepartmentId && e.ManagerId == employeeId)
+                    .ToListAsync();
+
+                foreach (var emp in oldDepartmentEmployees)
+                {
+                    emp.ManagerId = null;
+                }
+
+                _context.departmentLogs.Add(new DepartmentLogs
+                {
+                    DepartmentId = oldDepartment.DepartmentId,
+                    DepartmentName = oldDepartment.DepartmentName,
+                    ManagerId = null,
+                    Operation = "Manager Transferred Out",
+                    TimeStamp = DateTime.Now
+                });
+            }
+
+            await HandleManagerPromotion(employeeId, employeeName, newDepartmentId);
         }
 
         // Employee/Delete/EmployeeId - Get
@@ -415,7 +573,7 @@ namespace EMS.Web.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // Optional: Get the employee Id from Users table if needed
+            // Get the employee Id from Users table if needed
             var employee = await _context.Employees
                 .FirstOrDefaultAsync(e => e.EmployeeId.ToString() == userId);
 
@@ -456,6 +614,60 @@ namespace EMS.Web.Controllers
                 .ToListAsync();
 
             return View(managers);
+        }
+        // GET: Employee/CurrentMonthInfo
+        [Authorize]
+        public async Task<IActionResult> CurrentMonthInfo()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var employee = await _context.Employees
+                .Include(e => e.Department)
+                .FirstOrDefaultAsync(e => e.UserId == userId);
+
+            if (employee == null)
+            {
+                return NotFound("Employee not found for current user.");
+            }
+
+            var currentMonth = DateTime.Now.Month;
+            var currentYear = DateTime.Now.Year;
+
+            var monthlyLeaves = await _context.LeaveRequests
+                .Where(l => l.EmployeeId == employee.EmployeeId &&
+                            l.StartDate.Month == currentMonth &&
+                            l.StartDate.Year == currentYear)
+                .ToListAsync();
+
+            var daysOnLeave = monthlyLeaves
+                .Where(l => l.Status == "Approved")
+                .Sum(l => (l.EndDate - l.StartDate).Days + 1);
+
+            // Get manager name if applicable
+            string managerName = "N/A";
+            if (employee.ManagerId.HasValue)
+            {
+                var manager = await _context.Employees
+                    .FirstOrDefaultAsync(e => e.EmployeeId == employee.ManagerId);
+                managerName = manager?.FullName ?? "N/A";
+            }
+
+            var viewModel = new CurrentMonthEmployeeViewModel
+            {
+                Employee = employee,
+                ManagerName = managerName,
+                CurrentMonth = DateTime.Now.ToString("MMMM yyyy"),
+                LeaveRequests = monthlyLeaves,
+                DaysOnLeave = daysOnLeave,
+                RemainingLeaveBalance = employee.LeaveBalance - daysOnLeave
+            };
+
+            return View(viewModel);
         }
         public async Task<IActionResult> Index()
         {

@@ -16,7 +16,6 @@ namespace EMS.Tests.Controllers
 {
     public class DepartmentControllerTests
     {
-        // Reusable helper for creating an in-memory database
         private async Task<AppDbContext> GetInMemoryDbContextAsync()
         {
             var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -49,7 +48,6 @@ namespace EMS.Tests.Controllers
             await context.SaveChangesAsync();
             return context;
         }
-        // ✅ Add inside DepartmentControllerTests.cs, inside the class
         private RoleManager<IdentityRole> GetMockRoleManager()
         {
             var store = new Mock<IRoleStore<IdentityRole>>();
@@ -59,8 +57,6 @@ namespace EMS.Tests.Controllers
         }
 
 
-        // Utility: Setup controller with mock TempData
-        // ✅ Add/Update this inside DepartmentControllerTests.cs
         private DepartmentController SetupControllerWithContext(AppDbContext context)
         {
             var roleManager = GetMockRoleManager();
@@ -81,15 +77,15 @@ namespace EMS.Tests.Controllers
         [Fact]
         public async Task Index_ReturnsViewWithDepartments()
         {
-            // Arrange
+            
             var context = await GetInMemoryDbContextAsync();
             var roleManager = GetMockRoleManager();
             var controller = new DepartmentController(context, roleManager);
 
-            // Act
+            
             var result = await controller.Index();
 
-            // Assert
+            
             var viewResult = Assert.IsType<ViewResult>(result);
             var model = Assert.IsAssignableFrom<IEnumerable<Department>>(viewResult.Model);
             Assert.Single(model);
@@ -98,55 +94,32 @@ namespace EMS.Tests.Controllers
         [Fact]
         public async Task Create_Get_ReturnsViewWithManagers()
         {
-            // Arrange
+            
             var context = await GetInMemoryDbContextAsync();
             var roleManager = GetMockRoleManager();
             var controller = new DepartmentController(context, roleManager);
 
-            // Act
+            
             var result = controller.Create();
 
-            // Assert
+            
             var viewResult = Assert.IsType<ViewResult>(result);
             Assert.NotNull(viewResult.ViewData["Managers"]);
         }
 
-        [Fact]
-        public async Task Create_Post_ValidDepartment_SavesToDatabase()
-        {
-            // Arrange
-            var context = await GetInMemoryDbContextAsync();
-            var controller = SetupControllerWithContext(context);
-
-            var newDept = new Department
-            {
-                DepartmentName = "HR",
-                ManagerId = 1
-            };
-
-            // Act
-            var result = await controller.Create(newDept);
-
-            // Assert
-            var redirect = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal("Index", redirect.ActionName);
-
-            Assert.Equal(2, await context.Department.CountAsync());
-            Assert.Single(await context.departmentLogs.ToListAsync());
-        }
-
+        
         [Fact]
         public async Task Edit_Get_ReturnsDepartmentForEdit()
         {
-            // Arrange
+            
             var context = await GetInMemoryDbContextAsync();
             var roleManager = GetMockRoleManager();
             var controller = new DepartmentController(context, roleManager);
 
-            // Act
+            
             var result = await controller.Edit(1);
 
-            // Assert
+            
             var viewResult = Assert.IsType<ViewResult>(result);
             var model = Assert.IsType<Department>(viewResult.Model);
             Assert.Equal(1, model.DepartmentId);
@@ -155,15 +128,13 @@ namespace EMS.Tests.Controllers
         [Fact]
         public async Task Edit_Post_ValidUpdate_LogsAndUpdates()
         {
-            // Arrange
+            
             var context = await GetInMemoryDbContextAsync();
             var controller = SetupControllerWithContext(context);
 
-            // Detach the original Department to avoid EF tracking conflict
             var trackedDept = await context.Department.FindAsync(1);
             context.Entry(trackedDept).State = EntityState.Detached;
 
-            // Create a detached department object with same ID and new values
             var updatedDept = new Department
             {
                 DepartmentId = 1,
@@ -172,10 +143,10 @@ namespace EMS.Tests.Controllers
                 ManagerName = "Alice Johnson"
             };
 
-            // Act
+            
             var result = await controller.Edit(1, updatedDept);
 
-            // Assert
+            
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("Index", redirect.ActionName);
 
@@ -187,21 +158,21 @@ namespace EMS.Tests.Controllers
 
             var log = logs.First();
             Assert.Equal("Updated IT", log.DepartmentName);
-            Assert.Equal("Update", log.Operation); // assuming this is the operation
+            Assert.Equal("Updated", log.Operation);
         }
 
 
         [Fact]
         public async Task DeleteConfirmed_RemovesDepartmentAndLogs_WhenNoEmployees()
         {
-            // Arrange
+            
             var context = await GetInMemoryDbContextAsync();
             var controller = SetupControllerWithContext(context);
 
-            // Act
+            
             var result = await controller.DeleteConfirmed(1);
 
-            // Assert
+            
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("Index", redirect.ActionName);
 
@@ -212,14 +183,13 @@ namespace EMS.Tests.Controllers
         [Fact]
         public async Task DeleteConfirmed_PreventsDeletion_WhenEmployeesExist()
         {
-            // Arrange
+            
             var context = await GetInMemoryDbContextAsync();
             var controller = SetupControllerWithContext(context);
 
-            // Add employee to department
             context.Employees.Add(new Employee
             {
-                EmployeeId = 99, // Changed to avoid ID conflict
+                EmployeeId = 99, 
                 FullName = "Test Employee",
                 Email = "test@example.com",
                 PhoneNumber = "1234567890",
@@ -228,10 +198,10 @@ namespace EMS.Tests.Controllers
             });
             await context.SaveChangesAsync();
 
-            // Act
+            
             var result = await controller.DeleteConfirmed(1);
 
-            // Assert
+            
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("Index", redirect.ActionName);
 

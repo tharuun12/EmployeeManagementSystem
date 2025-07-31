@@ -13,17 +13,17 @@ namespace EMS.Models
 
         [Required, StringLength(100, MinimumLength = 3)]
         [Display(Name = "Full Name")]
-        public string FullName { get; set; }
+        public string? FullName { get; set; }
 
         [Required, EmailAddress]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         [Required]
         [RegularExpression(@"^\d{10}$", ErrorMessage = "Phone number must be exactly 10 digits.")]
-        public string PhoneNumber { get; set; }
+        public string? PhoneNumber { get; set; }
 
         [Required]
-        public string Role { get; set; }
+        public string? Role { get; set; }
 
         [Required]
         public bool IsActive { get; set; } = false;
@@ -41,22 +41,15 @@ namespace EMS.Models
         public int? ManagerId { get; set; } 
 
         [ForeignKey("ManagerId")]
-        public Employee? Manager { get; set; } // Navigation to manager
+        public Employee? Manager { get; set; } 
 
         public string? UserId { get; set; }
 
         [ForeignKey("UserId")]
         public Users? User { get; set; }
 
-        // Have The status like true or false
-        //public bool IsDeleted { get; set; }
-
-
-        public ICollection<Employee>? Subordinates { get; set; } // Navigation to team
+        public ICollection<Employee>? Subordinates { get; set; } 
 
         public int LeaveBalance { get; set; } = 20;
-
-
-        //public ICollection<Leaves>? Leaves { get; set; }
     }
 }

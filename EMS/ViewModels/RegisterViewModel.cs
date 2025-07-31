@@ -20,11 +20,9 @@ namespace EMS.ViewModels
         [Compare("Password", ErrorMessage = "Passwords do not match")]
         public string ConfirmPassword { get; set; }
 
-        //[Required]
-        //public string Role { get; set; }
-        public int EmployeeId { get; set; }       // For Edit
-        public int DepartmentId { get; set; }     // For dropdown selection
-        public int? ManagerId { get; set; }       // Nullable, since some employees might not have a manager
+        public int EmployeeId { get; set; }      
+        public int DepartmentId { get; set; }     
+        public int? ManagerId { get; set; }       
         public int LeaveBalance { get; set; }
     }
 }

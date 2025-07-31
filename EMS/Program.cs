@@ -5,6 +5,7 @@ using EMS.Services.Implementations;
 using EMS.Services.Interface;
 using EMS.Web.Data;
 using EMS.Web.Models;
+using EMS.Middleware;
 using Jose;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -12,6 +13,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,10 +35,16 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 // JWT Auth
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 builder.Services.Configure<JwtSettings>(jwtSettings);
+// Configure JSON serialization to handle cycles
 builder.Services.AddControllersWithViews(options =>
 {
     options.Filters.Add<TrackLastActivityFilter>();
     options.Filters.Add<LogUserActivityFilter>();
+})
+.AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.WriteIndented = true;
 });
 
 builder.Services.AddAuthentication(options =>
@@ -70,7 +79,7 @@ builder.Services.AddScoped<IUserActivityService, UserActivityService>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30); // session timeout
+    options.IdleTimeout = TimeSpan.FromMinutes(30); 
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
@@ -86,17 +95,11 @@ using (var scope = app.Services.CreateScope())
     await DbSeeder.SeedDefaultAdminAsync(services);
 }
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-//    await RoleSeeder.SeedRoles(roleManager);
-//}
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    await RoleSeeder.SeedRolesAndAdmin(services); // ✅ Calls your updated seeder
+    await RoleSeeder.SeedRolesAndAdmin(services); 
 }
-//app.UseMiddleware<EMS.Middleware.ExceptionMiddleware>();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();

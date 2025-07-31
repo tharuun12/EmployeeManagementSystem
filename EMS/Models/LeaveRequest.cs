@@ -27,7 +27,7 @@ namespace EMS.Models
 
         [Required]
         [StringLength(20)]
-        public string Status { get; set; } = "Pending"; // Pending / Approved / Rejected
+        public string Status { get; set; } = "Pending"; 
 
         public DateTime RequestDate { get; set; } = DateTime.UtcNow;
     }

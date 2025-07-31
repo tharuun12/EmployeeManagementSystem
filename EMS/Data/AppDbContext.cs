@@ -34,7 +34,7 @@ namespace EMS.Web.Data
                 .HasForeignKey(e => e.DepartmentId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Self-referencing Employee-Manager relation (optional)
+            // Self-referencing Employee-Manager relation 
             modelBuilder.Entity<Employee>()
                 .HasOne(e => e.Manager)
                 .WithMany(e => e.Subordinates)

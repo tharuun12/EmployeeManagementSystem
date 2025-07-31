@@ -5,13 +5,12 @@ namespace EMS.Models
     public class LoginActivityLogs
     {
         public int Id { get; set; }
-        public string userId { get; set; }
+        public string? userId { get; set; }
         public int employeeId { get; set; }
         public DateTime LoginTime { get; set; } 
-        public string IpAddress { get; set; }
-
+        public string? IpAddress { get; set; }
         public bool IsSuccessful { get; set; } = false;
-        public string Email { get; set; }
+        public string? Email { get; set; }
         public DateTime? LogoutTime { get; set; }
 
         [NotMapped]

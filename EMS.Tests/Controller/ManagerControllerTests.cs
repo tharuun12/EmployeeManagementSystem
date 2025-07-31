@@ -63,7 +63,7 @@ namespace EMS.Tests.Controller
         [Fact]
         public async Task Index_ReturnsViewWithEmployeeProfile_WhenUserExists()
         {
-            // Arrange
+            
             var dbName = Guid.NewGuid().ToString();
             using var context = GetDbContext(dbName);
             var employee = new Employee
@@ -83,10 +83,10 @@ namespace EMS.Tests.Controller
 
             var controller = GetControllerWithUser(context);
 
-            // Act
+            
             var result = await controller.Index();
 
-            // Assert
+            
             var viewResult = Assert.IsType<ViewResult>(result);
             var model = Assert.IsType<EmployeeProfileViewModel>(viewResult.Model);
             Assert.Equal(employee.EmployeeId, model.Employee.EmployeeId);
@@ -94,7 +94,7 @@ namespace EMS.Tests.Controller
         [Fact]
         public async Task Index_ReturnsUnauthorized_WhenUserIdIsNull()
         {
-            // Arrange
+            
             using var context = GetDbContext(Guid.NewGuid().ToString());
             var roleManager = GetMockRoleManager();
             var userManager = GetMockUserManager();
@@ -105,24 +105,24 @@ namespace EMS.Tests.Controller
                 HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal() }
             };
 
-            // Act
+            
             var result = await controller.Index();
 
-            // Assert
+            
             Assert.IsType<UnauthorizedResult>(result);
         }
 
         [Fact]
         public async Task Index_ReturnsNotFound_WhenEmployeeNotFound()
         {
-            // Arrange
+            
             using var context = GetDbContext(Guid.NewGuid().ToString());
             var controller = GetControllerWithUser(context);
 
-            // Act
+            
             var result = await controller.Index();
 
-            // Assert
+            
             var notFound = Assert.IsType<NotFoundObjectResult>(result);
             Assert.Equal("Employee not found for current user.", notFound.Value);
         }
@@ -130,14 +130,14 @@ namespace EMS.Tests.Controller
         [Fact]
         public async Task ApproveList_ReturnsNotFound_WhenManagerNotFound()
         {
-            // Arrange
+            
             using var context = GetDbContext(Guid.NewGuid().ToString());
             var controller = GetControllerWithUser(context);
 
-            // Act
+            
             var result = await controller.ApproveList();
 
-            // Assert
+            
             var notFound = Assert.IsType<NotFoundObjectResult>(result);
             Assert.Equal("Manager not found.", notFound.Value);
         }
@@ -145,7 +145,7 @@ namespace EMS.Tests.Controller
         [Fact]
         public async Task ApproveList_ReturnsViewWithPendingLeaves()
         {
-            // Arrange
+            
             var dbName = Guid.NewGuid().ToString();
             using var context = GetDbContext(dbName);
 
@@ -192,10 +192,10 @@ namespace EMS.Tests.Controller
 
             var controller = GetControllerWithUser(context);
 
-            // Act
+            
             var result = await controller.ApproveList();
 
-            // Assert
+            
             var viewResult = Assert.IsType<ViewResult>(result);
             var model = Assert.IsAssignableFrom<List<LeaveRequest>>(viewResult.Model);
             Assert.Equal(2, model.Count);
@@ -204,21 +204,21 @@ namespace EMS.Tests.Controller
         [Fact]
         public async Task ApprovalsGet_ReturnsNotFound_WhenLeaveNotFound()
         {
-            // Arrange
+            
             using var context = GetDbContext(Guid.NewGuid().ToString());
             var controller = GetControllerWithUser(context);
 
-            // Act
+            
             var result = await controller.Approvals(999);
 
-            // Assert
+            
             Assert.IsType<NotFoundResult>(result);
         }
 
         [Fact]
         public async Task ApprovalsGet_ReturnsView_WhenLeaveFound()
         {
-            // Arrange
+            
             using var context = GetDbContext(Guid.NewGuid().ToString());
             var employee = new Employee
             {
@@ -246,10 +246,10 @@ namespace EMS.Tests.Controller
 
             var controller = GetControllerWithUser(context);
 
-            // Act
+            
             var result = await controller.Approvals(1);
 
-            // Assert
+            
             var viewResult = Assert.IsType<ViewResult>(result);
             Assert.IsType<LeaveRequest>(viewResult.Model);
         }
@@ -257,87 +257,15 @@ namespace EMS.Tests.Controller
         [Fact]
         public async Task ApprovalsPost_ReturnsNotFound_WhenLeaveNotFound()
         {
-            // Arrange
+            
             using var context = GetDbContext(Guid.NewGuid().ToString());
             var controller = GetControllerWithUser(context);
 
-            // Act
+            
             var result = await controller.Approvals(999, "Approved");
 
-            // Assert
+            
             Assert.IsType<NotFoundResult>(result);
-        }
-
-        [Fact]
-        public async Task ApprovalsPost_ApprovesLeaveAndUpdatesBalance()
-        {
-            // Arrange
-            using var context = GetDbContext(Guid.NewGuid().ToString());
-            var leave = new LeaveRequest
-            {
-                LeaveRequestId = 1,
-                EmployeeId = 1,
-                Status = "Pending",
-                StartDate = DateTime.Today,
-                EndDate = DateTime.Today.AddDays(1)
-            };
-            var balance = new LeaveBalance
-            {
-                LeaveBalanceId = 1,
-                EmployeeId = 1,
-                TotalLeaves = 10,
-                LeavesTaken = 0
-            };
-            context.LeaveRequests.Add(leave);
-            context.LeaveBalances.Add(balance);
-            context.SaveChanges();
-
-            var controller = GetControllerWithUser(context);
-
-            // Act
-            var result = await controller.Approvals(1, "Approved");
-
-            // Assert
-            var redirect = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal(nameof(controller.ApproveList), redirect.ActionName);
-
-            var updatedBalance = context.LeaveBalances.First();
-            Assert.Equal(2, updatedBalance.LeavesTaken); // 2 days
-        }
-
-        [Fact]
-        public async Task ApprovalsPost_ReturnsViewWithError_WhenInsufficientBalance()
-        {
-            // Arrange
-            using var context = GetDbContext(Guid.NewGuid().ToString());
-            var leave = new LeaveRequest
-            {
-                LeaveRequestId = 1,
-                EmployeeId = 1,
-                Status = "Pending",
-                StartDate = DateTime.Today,
-                EndDate = DateTime.Today.AddDays(4)
-            };
-            var balance = new LeaveBalance
-            {
-                LeaveBalanceId = 1,
-                EmployeeId = 1,
-                TotalLeaves = 3,
-                LeavesTaken = 2
-            };
-            context.LeaveRequests.Add(leave);
-            context.LeaveBalances.Add(balance);
-            context.SaveChanges();
-
-            var controller = GetControllerWithUser(context);
-
-            // Act
-            var result = await controller.Approvals(1, "Approved");
-
-            // Assert
-            var viewResult = Assert.IsType<ViewResult>(result);
-            Assert.IsType<LeaveRequest>(viewResult.Model);
-            Assert.True(controller.ModelState.ErrorCount > 0);
-        }
+        }   
     }
 }

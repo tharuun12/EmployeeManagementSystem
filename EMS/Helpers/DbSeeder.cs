@@ -20,13 +20,13 @@ namespace EMS.Helpers
                 string adminPassword = "Default@123";
                 string adminRole = "Admin";
 
-                // 1. Create Role if not exists
+                // Create Role if not exists
                 if (!await roleManager.RoleExistsAsync(adminRole))
                 {
                     await roleManager.CreateAsync(new IdentityRole(adminRole));
                 }
 
-                // 2. Create Department if it doesn't exist
+                // Create Department if it doesn't exist
                 var adminDepartment = await dbContext.Department.FirstOrDefaultAsync(d => d.DepartmentId == 1);
                 var departmentCount = await dbContext.Department.CountAsync();
                 if (departmentCount < 1)
@@ -39,7 +39,7 @@ namespace EMS.Helpers
                     await dbContext.SaveChangesAsync();
                 }
 
-                // 3. Create Admin User if not exists
+                // Create Admin User if not exists
                 var adminUser = await userManager.FindByEmailAsync(adminEmail);
                 if (adminUser == null)
                 {
@@ -60,14 +60,13 @@ namespace EMS.Helpers
                 }
                 else
                 {
-                    // Ensure FullName and PhoneNumber are not null for existing user
                     if (string.IsNullOrEmpty(adminUser.FullName))
                         adminUser.FullName = "Default Admin";
                     if (string.IsNullOrEmpty(adminUser.PhoneNumber))
                         adminUser.PhoneNumber = "9999999999";
                 }
 
-                // 4. Insert Admin into Employee table if not exists
+                // Insert Admin into Employee table if not exists
                 bool employeeExists = await dbContext.Employees.AnyAsync(e => e.Role == "Admin");
                 if (!employeeExists)
                 {
@@ -81,7 +80,7 @@ namespace EMS.Helpers
                         DepartmentId = adminDepartment.DepartmentId,
                         ManagerId = null,
                         UserId = adminUser.Id,
-                        LeaveBalance = 30 // Default leave balance
+                        LeaveBalance = 20 
                     };
 
                     dbContext.Employees.Add(employee);

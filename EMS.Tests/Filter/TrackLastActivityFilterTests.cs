@@ -9,14 +9,12 @@ using System;
 
 public class TrackLastActivityFilterTests
 {
-    // ✅ Helper method (no "out" usage, returns as tuple)
     private (DefaultHttpContext context, Mock<ISession> sessionMock, Dictionary<string, byte[]> sessionStore)
         GetHttpContextWithMockSession()
     {
         var sessionMock = new Mock<ISession>();
         var sessionStore = new Dictionary<string, byte[]>();
 
-        // Mock Set behavior
         sessionMock.Setup(s => s.Set(It.IsAny<string>(), It.IsAny<byte[]>()))
             .Callback<string, byte[]>((key, value) => sessionStore[key] = value);
 
@@ -31,7 +29,6 @@ public class TrackLastActivityFilterTests
     [Fact]
     public void OnActionExecuting_SetsLastActivityTimeInSession()
     {
-        // Arrange
         var filter = new TrackLastActivityFilter();
         var (httpContext, sessionMock, sessionStore) = GetHttpContextWithMockSession();
 
@@ -48,10 +45,8 @@ public class TrackLastActivityFilterTests
             new Dictionary<string, object>(),
             controller: null);
 
-        // Act
         filter.OnActionExecuting(executingContext);
 
-        // Assert
         Assert.True(sessionStore.ContainsKey("LastActivityTime"));
         var storedBytes = sessionStore["LastActivityTime"];
         var storedValue = Encoding.UTF8.GetString(storedBytes);

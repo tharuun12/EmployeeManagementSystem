@@ -15,7 +15,7 @@ public class LogUserActivityFilterTests
     private AppDbContext GetInMemoryDbContext()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString()) // Unique DB for each test
+            .UseInMemoryDatabase(Guid.NewGuid().ToString()) 
             .Options;
 
         return new AppDbContext(options);
@@ -46,7 +46,6 @@ public class LogUserActivityFilterTests
     [Fact]
     public void OnActionExecuting_AuthenticatedUser_AddsUserActivityLog()
     {
-        // Arrange
         var dbContext = GetInMemoryDbContext();
         var httpContext = GetHttpContextWithUser();
 
@@ -71,10 +70,8 @@ public class LogUserActivityFilterTests
             new Dictionary<string, object>(),
             controller: null);
 
-        // Act
         filter.OnActionExecuting(actionExecutingContext);
 
-        // Assert
         var logs = dbContext.UserActivityLogs.ToListAsync().Result;
 
         Assert.Single(logs);

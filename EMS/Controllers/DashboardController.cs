@@ -15,25 +15,23 @@ namespace EMS.Controllers
             _context = context;
         }
 
-        // Dashboard/Index - Get ( Get all the analytics of the Employee and Departement )
-        [Authorize(Roles = "Admin")]
+        // Dashboard/Index - 
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index()
         {
             var totalEmployees = await _context.Employees.CountAsync();
             var activeEmployees = await _context.Employees.CountAsync(e => e.IsActive == true);
             var totalDepartments = await _context.Department.CountAsync();
 
+            // Leave Request Analytics 
+            var totalLeaveRequests = await _context.LeaveRequests.CountAsync();
+            var approvedLeaves = await _context.LeaveRequests.CountAsync(l => l.Status == "Approved");
+            var pendingLeaves = await _context.LeaveRequests.CountAsync(l => l.Status == "Pending");
+            var rejectedLeaves = await _context.LeaveRequests.CountAsync(l => l.Status == "Rejected");
+
             var recentEmployees = await _context.Employees
-                //.OrderByDescending(e => e.CreatedDate)
                 .Take(5)
                 .ToListAsync();
-
-            //var departmentStatss = await _context.Department
-            //    .Select(d => new
-            //    {
-            //        Name = d.DepartmentName,
-            //        EmployeeCount = _context.Employees.Count(e => e.DepartmentId == d.DepartmentId)
-            //    }).ToListAsync();
 
             var departmentStats = await _context.Department
                 .Include(d => d.Employees)
@@ -42,15 +40,18 @@ namespace EMS.Controllers
                     Name = d.DepartmentName,
                     EmployeeCount = d.Employees!.Count()
                 }).ToListAsync();
-            Console.WriteLine(departmentStats.Count);
-            Console.WriteLine(departmentStats);
 
             ViewBag.TotalEmployees = totalEmployees;
             ViewBag.ActiveEmployees = activeEmployees;
             ViewBag.TotalDepartments = totalDepartments;
-
             ViewBag.RecentEmployees = recentEmployees;
             ViewBag.DepartmentStats = departmentStats;
+
+            // Add leave data to ViewBag
+            ViewBag.TotalLeaveRequests = totalLeaveRequests;
+            ViewBag.ApprovedLeaves = approvedLeaves;
+            ViewBag.PendingLeaves = pendingLeaves;
+            ViewBag.RejectedLeaves = rejectedLeaves;
 
             return View(departmentStats);
         }

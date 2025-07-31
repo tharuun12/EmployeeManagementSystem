@@ -9,7 +9,7 @@ namespace EMS.Models
         public int DepartmentId { get; set; }
 
         [Display(Name = "Department Name")]
-        public string DepartmentName { get; set; }
+        public string? DepartmentName { get; set; }
 
         public int? ManagerId { get; set; }
 

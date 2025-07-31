@@ -33,56 +33,10 @@
                         }
                         @inject SignInManager<Users> SignInManager
                         @inject UserManager<Users> UserManager
-                        @* @UserManager.GetUserAsync(User).Result?.FullName *@
-                        @* <span class="nav-link fw-bold text-primary">
-                            Hello, @User.Identity.Name!
-                        </span> *@
 
                         @if (User?.Identity != null && User.Identity.IsAuthenticated)
                         {
-                            @* <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                            </li> *@
 
-                            @* @if (User.IsInRole("Admin"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="Index">Profile</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="EmployeeList">All Employees</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="Filter">Filter Employees</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Department" asp-action="Index">Manage Departments</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="ManagersList">Managers</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Leave" asp-action="ApproveList">Leave Approvals</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Activity" asp-action="Index">Login History</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Leave" asp-action="Apply">Apply Leave</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark"
-                                       asp-controller="Leave"
-                                       asp-action="MyLeaves"
-                                       asp-route-employeeId="@employeeId">Leave History</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Account" asp-action="ChangePassword">Reset Password</a>
-                                </li>
-                            } *@
                             @if (User.IsInRole("Admin"))
                             {
                                 <!-- Profile Group -->
@@ -101,14 +55,17 @@
                                     <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
                                 </li>
 
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="EmployeeList">All Employees</a>
+                                </li>
+
                                 <!-- User Management Group -->
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle text-dark" href="#" id="userMgmtDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                         User Management
                                     </a>
                                     <ul class="dropdown-menu" aria-labelledby="userMgmtDropdown">
-                                        <li><a class="dropdown-item" asp-controller="Employee" asp-action="EmployeeList">All Employees</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Employee" asp-action="ManagersList">Manage Managers</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Employee" asp-action="ManagersList">Manage List</a></li>
                                         <li><a class="dropdown-item" asp-controller="Employee" asp-action="Filter">Filter Employees</a></li>
                                     </ul>
                                 </li>
@@ -118,20 +75,7 @@
                                     <a class="nav-link text-dark" asp-controller="Department" asp-action="Index">Manage Departments</a>
                                 </li>
 
-                                <!-- Leave Management Group -->
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle text-dark" href="#" id="leaveMgmtDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        Leave Management
-                                    </a>
-                                    <ul class="dropdown-menu" aria-labelledby="leaveMgmtDropdown">
-                                        <li><a class="dropdown-item" asp-controller="Leave" asp-action="ApproveList">Leave Approvals</a></li>
-                                        <li>
-                                            <a class="dropdown-item" asp-controller="Leave" asp-action="Apply">Apply for Leave</a>
-                                        </li>
-                                        <li><a class="dropdown-item" asp-controller="Leave" asp-action="MyLeaves" asp-route-employeeId="@employeeId">My Leave History</a></li>
-                                        
-                                    </ul>
-                                </li>
+                                <li class="nav-item"><a class="nav-link text-dark" asp-controller="Leave" asp-action="ApproveList">Leave Approvals</a></li>
 
                                 <!-- System Logs -->
                                 <li class="nav-item">
@@ -157,6 +101,9 @@
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-controller="Account" asp-action="ChangePassword">Change Password</a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Employee" asp-action="CurrentMonthInfo">Monthly Leave Report</a>
+                                </li>
                             }
 
                             @if (User.IsInRole("Manager"))
@@ -168,7 +115,7 @@
                                     <a class="nav-link text-dark" asp-controller="Manager" asp-action="Subordinates">Team Members</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Manager" asp-action="ApproveList">Leave Approvals</a>
+                                    <a class="nav-link text-dark" asp-controller="Leave" asp-action="EmployeeLeaveList">Leave Approvals</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-controller="Leave" asp-action="Apply">Apply for Leave</a>
@@ -212,39 +159,7 @@
                             </li>
                         }
                         
-                    </ul>
-                    @* <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Department" asp-action="Index">Department</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Employee" asp-action="Index">Employee</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Leave" asp-action="Apply">Leave</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Manager" asp-action="Index">Manager</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Leave" asp-action="Approval">Leave Approval</a>
-                        </li>
-                        
-                    </ul> *@
+                    </ul>                  
                 </div>
             </div>
         </nav>
@@ -259,11 +174,7 @@
         <!-- Toast Notification Partial -->
         @await Html.PartialAsync("_ToastNotification")
     </div>
-
     <footer class="border-top footer text-muted">
-        @* <div class="container">
-            &copy; 2025 - EMS - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div> *@
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

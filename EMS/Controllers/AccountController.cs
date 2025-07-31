@@ -74,7 +74,6 @@ public class AccountController : Controller
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
-        // Ensure user.Id is set (fetch from DB if needed)
         if (result.Succeeded)
         {
             user = await _userManager.FindByEmailAsync(user.Email);
@@ -240,13 +239,13 @@ public class AccountController : Controller
         // Generate 6-digit OTP
         var otp = new Random().Next(100000, 999999).ToString();
 
-        // Store OTP & Timestamp in TempData (or better: DB or Cache)
+        // Store OTP & Timestamp in TempData 
         TempData["OTP"] = otp;
         TempData["OTPEmail"] = model.Email;
         TempData["OTPExpiry"] = DateTime.UtcNow.AddMinutes(10).ToString();
 
         var body = $"Your OTP to reset your EMS password is: <b>{otp}</b><br/>This OTP is valid for 10 minutes.";
-
+        await _emailService.SendEmailAsync(model.Email, "EMS Password Reset OTP", body);
         return RedirectToAction("VerifyOtp", new { email = model.Email });
     }
 
@@ -404,64 +403,6 @@ public class AccountController : Controller
         return RedirectToAction("Login", "Account");
     }
 
-
-    // Vefiry if i am using this 
-    //public async Task<IActionResult> Index()
-    //{
-    //    var currentUser = await _userManager.GetUserAsync(User);
-
-    //    var employee = _context.Employees.FirstOrDefault(e => e.Email == currentUser.Email);
-
-    //    return View(employee); 
-    //}
-
-
-    //[HttpPost]
-    //public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
-    //{
-    //    if (!ModelState.IsValid)
-    //        return View(model);
-
-    //    string user = "tharuunmohan@gmail.com";
-
-    //    // This is not working this is getting the user token and then process it 
-    //    //var user = await _userManager.FindByEmailAsync(model.Email);
-    //    //Console.WriteLine(user);
-    //    //if (user == null)
-    //    //    return RedirectToAction("ForgotPasswordConfirmation");
-    //    //var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-
-
-    //    var token = user;
-
-
-    //    var resetLink = Url.Action("ResetPassword", "Account",
-    //        new { token, email = model.Email }, Request.Scheme);
-
-    //    var subject = $"Reset Password - EMS Portal {model.Email}";
-    //    var body = $"Click the link to reset your password: <a href='{resetLink}'>Reset Password</a>";
-
-    //    await _emailService.SendEmailAsync(model.Email, subject, body);
-
-    //    return RedirectToAction("ForgotPasswordConfirmation");
-    //}
-
-
-
-
-    //[HttpPost]
-    //public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
-    //{
-    //    var user = await _userManager.FindByEmailAsync(model.Email);
-    //    if (user == null) return BadRequest("Invalid");
-
-    //    var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
-    //    if (result.Succeeded) return Ok("Password reset successful");
-
-    //    return BadRequest(result.Errors);
-    //}
-
-
     [Authorize(Roles = "Admin")]
     public IActionResult AdminDashboard()
     {
@@ -479,6 +420,4 @@ public class AccountController : Controller
     {
         return View();
     }
-
-
 }

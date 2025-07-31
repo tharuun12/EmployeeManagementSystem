@@ -11,7 +11,7 @@ namespace EMS.Models
 
         [Required]
         [Display(Name = "Department Name")]
-        public string DepartmentName { get; set; }
+        public string? DepartmentName { get; set; }
 
         public int? ManagerId { get; set; }
         public string? ManagerName { get; set; }

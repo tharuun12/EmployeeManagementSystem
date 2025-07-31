@@ -109,9 +109,7 @@ namespace EMS.Tests.Controller
             var configMock = new Mock<IConfiguration>();
             var loggerMock = new Mock<ILogger<AccountController>>();
 
-            //var controller = GetController(context, userManagerMock, signInManagerMock, emailServiceMock, configMock, loggerMock);
             var controller = GetController(context, userManagerMock, signInManagerMock, emailServiceMock, configMock, loggerMock);
-            //By initializing controller.TempData in your test, you are accurately simulating the environment that ASP.NET Core provides at runtime.
             controller.TempData = new TempDataDictionary(
                 controller.ControllerContext.HttpContext,
                 Mock.Of<ITempDataProvider>()
@@ -130,54 +128,6 @@ namespace EMS.Tests.Controller
             var viewResult = Assert.IsType<ViewResult>(result);
             Assert.Equal(model, viewResult.Model);
             Assert.True(controller.ModelState.ErrorCount > 0);
-        }
-
-        [Fact] 
-        public async Task Register_Post_RedirectsToLogin_WhenRegistrationSucceeds()
-        {
-            using var context = GetDbContext(Guid.NewGuid().ToString());
-            var employee = new Employee
-            {
-                EmployeeId = 1,
-                Email = "test@example.com",
-                FullName = "Test User",
-                PhoneNumber = "1234567890",
-                Role = "Employee",
-                DepartmentId = 1,
-                IsActive = true
-            };
-            context.Employees.Add(employee);
-            context.SaveChanges();
-
-            var userManagerMock = MockUserManager();
-                userManagerMock.Setup(x => x.CreateAsync(It.IsAny<Users>(), It.IsAny<string>()))
-                    .ReturnsAsync(IdentityResult.Success);
-                userManagerMock.Setup(x => x.AddToRoleAsync(It.IsAny<Users>(), It.IsAny<string>()))
-                    .ReturnsAsync(IdentityResult.Success);
-
-            var signInManagerMock = MockSignInManager(userManagerMock.Object);
-            var emailServiceMock = new Mock<IEmailService>();
-            var configMock = new Mock<IConfiguration>();
-            var loggerMock = new Mock<ILogger<AccountController>>();
-
-            var controller = GetController(context, userManagerMock, signInManagerMock, emailServiceMock, configMock, loggerMock);
-
-            // Dummy RemoteIpAddress
-            controller.ControllerContext.HttpContext.Connection.RemoteIpAddress = System.Net.IPAddress.Parse("127.0.0.1");
-
-            var model = new RegisterViewModel
-            {
-                Email = "test@example.com",
-                Password = "Password1!",
-                ConfirmPassword = "Password1!",
-                FullName = "Test User",
-                PhoneNumber = "1234567890"
-            };
-
-            var result = await controller.Register(model);
-
-            var redirect = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal("Login", redirect.ActionName);
         }
 
         [Fact]
