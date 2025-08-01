@@ -20,17 +20,28 @@
         <input type="hidden" asp-for="PhoneNumber" class="register-input" />
         <input type="hidden" asp-for="FullName" class="register-input" />
 
-        <div class="register-group">
-            <label class="register-label">Password</label>
-            <input asp-for="Password" type="password" class="register-input" />
-            <span asp-validation-for="Password" class="register-error"></span>
+        <div class="login-group">
+            <label class="login-label">Password</label>
+            <div class="password-input-container">
+                <input asp-for="Password" type="password" class="login-input" id="registerPasswordField" />
+                <button type="button" class="password-toggle-btn" onclick="toggleRegisterPasswordVisibility()">
+                    <i class="fas fa-eye-slash" id="registerPasswordToggleIcon"></i>
+                </button>
+            </div>
+            <span asp-validation-for="Password" class="login-error"></span>
         </div>
 
-        <div class="register-group">
-            <label class="register-label">Confirm Password</label>
-            <input asp-for="ConfirmPassword" type="password" class="register-input" />
-            <span asp-validation-for="ConfirmPassword" class="register-error"></span>
+        <div class="login-group">
+            <label class="login-label">Confirm Password</label>
+            <div class="password-input-container">
+                <input asp-for="ConfirmPassword" type="password" class="login-input" id="confirmPasswordField" />
+                <button type="button" class="password-toggle-btn" onclick="toggleConfirmPasswordVisibility()">
+                    <i class="fas fa-eye-slash" id="confirmPasswordToggleIcon"></i>
+                </button>
+            </div>
+            <span asp-validation-for="ConfirmPassword" class="login-error"></span>
         </div>
+
 
         <div class="register-actions">
             <button type="submit" class="register-button">Register</button>
@@ -40,3 +51,28 @@
         </div>
     </form>
 </div>
+<script>
+    function toggleRegisterPasswordVisibility() {
+        const field = document.getElementById("registerPasswordField");
+        const icon = document.getElementById("registerPasswordToggleIcon");
+        toggleVisibility(field, icon);
+    }
+
+    function toggleConfirmPasswordVisibility() {
+        const field = document.getElementById("confirmPasswordField");
+        const icon = document.getElementById("confirmPasswordToggleIcon");
+        toggleVisibility(field, icon);
+    }
+
+    function toggleVisibility(field, icon) {
+        if (field.type === "password") {
+            field.type = "text";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        } else {
+            field.type = "password";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        }
+    }
+</script>

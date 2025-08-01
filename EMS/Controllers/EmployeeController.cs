@@ -278,6 +278,22 @@ namespace EMS.Web.Controllers
                         ViewBag.Roles = await _roleManager.Roles.ToListAsync();
                         return View(employee);
                     }
+                    // Update AspNetUserRoles mapping for this user
+                    if (!string.IsNullOrEmpty(existingEmployee.UserId))
+                    {
+                        var user = await _userManager.FindByIdAsync(existingEmployee.UserId);
+                        if (user != null)
+                        {
+                            // Remove all current roles
+                            var currentRoles = await _userManager.GetRolesAsync(user);
+                            foreach (var r in currentRoles)
+                                await _userManager.RemoveFromRoleAsync(user, r);
+
+                            // Add the new role
+                            await _userManager.AddToRoleAsync(user, employee.Role);
+                        }
+                    }
+
 
                     if (employee.LeaveBalance != existingEmployee.LeaveBalance)
                     {

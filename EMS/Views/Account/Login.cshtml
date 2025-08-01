@@ -19,10 +19,15 @@
 
         <div class="login-group">
             <label class="login-label">Password</label>
-            <input asp-for="Password" type="password" class="login-input" />
+            <div class="password-input-container">
+                <input asp-for="Password" type="password" class="login-input" id="passwordField" />
+                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility()">
+                    <i class="fas fa-eye" id="passwordToggleIcon"></i>
+                </button>
+            </div>
             <span asp-validation-for="Password" class="login-error"></span>
         </div>
-
+       
         <div class="login-remember-forgot">
             <div class="login-remember">
                 <input asp-for="RememberMe" type="checkbox" class="login-checkbox" />
@@ -40,3 +45,17 @@
         </div>
     </form>
 </div>
+<script>
+       function togglePasswordVisibility() {
+        const passwordField = document.getElementById('passwordField');
+        const toggleIcon = document.getElementById('passwordToggleIcon');
+
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            toggleIcon.className = 'fas fa-eye-slash';
+        } else {
+            passwordField.type = 'password';
+            toggleIcon.className = 'fas fa-eye';
+        }
+    }
+</script>

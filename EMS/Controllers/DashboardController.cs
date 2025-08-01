@@ -15,7 +15,6 @@ namespace EMS.Controllers
             _context = context;
         }
 
-        // Dashboard/Index - 
         //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index()
         {

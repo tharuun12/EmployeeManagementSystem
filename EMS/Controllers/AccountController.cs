@@ -233,7 +233,7 @@ public class AccountController : Controller
         var user = await _userManager.FindByEmailAsync(model.Email);
         if (user == null)
         {
-            return RedirectToAction("ForgotPasswordConfirmation");
+            return RedirectToAction("ForgotPasswordNotFound");
         }
 
         // Generate 6-digit OTP

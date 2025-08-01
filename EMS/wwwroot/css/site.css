@@ -248,6 +248,53 @@ body {
 .login-link2 {
     font-size: 18px;
 }
+.password-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.login-input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 16px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+.login-input:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+.password-toggle-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    height: 32px;
+    width: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: black;
+}
+
+.password-toggle-btn i {
+    font-size: 1.2rem;
+    color: black;
+    transition: color 0.2s;
+}
+
+.password-toggle-btn:hover i {
+    color: black;
+}
+
 /*New CSS code */
 /* Universal Create Form Styling */
 .create-form {
@@ -259,86 +306,86 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.06);
 }
 
-    /* Title */
-    .create-form .form-title {
-        font-size: 26px;
-        font-weight: 600;
-        color: #212529;
-        margin-bottom: 25px;
-        text-align: center;
-    }
+/* Title */
+.create-form .form-title {
+    font-size: 26px;
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 25px;
+    text-align: center;
+}
 
-    /* Form Fields */
-    .create-form .form-group {
-        margin-bottom: 20px;
-    }
+/* Form Fields */
+.create-form .form-group {
+    margin-bottom: 20px;
+}
 
-    .create-form .form-label {
-        display: block;
-        font-weight: 500;
-        color: #212529;
-        margin-bottom: 8px;
-    }
+.create-form .form-label {
+    display: block;
+    font-weight: 500;
+    color: #212529;
+    margin-bottom: 8px;
+}
 
-    .create-form .form-control {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-        font-size: 15px;
-        transition: border-color 0.2s ease-in-out;
-    }
+.create-form .form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 15px;
+    transition: border-color 0.2s ease-in-out;
+}
 
-        .create-form .form-control:focus {
-            border-color: #0d6efd;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.2);
-        }
+.create-form .form-control:focus {
+    border-color: #0d6efd;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.2);
+}
 
-    /* Validation */
-    .create-form .form-error {
-        font-size: 13px;
-        color: #dc3545;
-        margin-top: 5px;
-        display: block;
-    }
+/* Validation */
+.create-form .form-error {
+    font-size: 13px;
+    color: #dc3545;
+    margin-top: 5px;
+    display: block;
+}
 
-    /* Action Buttons */
-    .create-form .form-actions {
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-        margin-top: 25px;
-    }
+/* Action Buttons */
+.create-form .form-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 25px;
+}
 
-    .create-form .btn {
-        padding: 10px 20px;
-        font-size: 15px;
-        border-radius: 4px;
-        transition: all 0.2s ease-in-out;
-    }
+.create-form .btn {
+    padding: 10px 20px;
+    font-size: 15px;
+    border-radius: 4px;
+    transition: all 0.2s ease-in-out;
+}
 
-    .create-form .btn-success {
-        background-color: #198754;
-        border-color: #198754;
-        color: #fff;
-    }
+.create-form .btn-success {
+    background-color: #198754;
+    border-color: #198754;
+    color: #fff;
+}
 
-        .create-form .btn-success:hover {
-            background-color: #157347;
-            border-color: #146c43;
-        }
+.create-form .btn-success:hover {
+    background-color: #157347;
+    border-color: #146c43;
+}
 
-    .create-form .btn-secondary {
-        background-color: #6c757d;
-        border-color: #6c757d;
-        color: #fff;
-    }
+.create-form .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #fff;
+}
 
-        .create-form .btn-secondary:hover {
-            background-color: #5c636a;
-            border-color: #565e64;
-        }
+.create-form .btn-secondary:hover {
+    background-color: #5c636a;
+    border-color: #565e64;
+}
 
 /* Mobile Responsive */
 @media (max-width: 576px) {

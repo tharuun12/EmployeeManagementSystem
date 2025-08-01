@@ -344,8 +344,16 @@ namespace EMS.Web.Controllers
 
                 TempData["ToastSuccess"] = $"Leave status updated to {status}!";
             }
+            var currentRole = User.FindFirstValue(ClaimTypes.Role);
 
-            return RedirectToAction(nameof(ApproveList));
+            if (currentRole == "Manager")
+            {
+                return RedirectToAction(nameof(EmployeeLeaveList));
+            }
+            else
+            {
+                return RedirectToAction(nameof(ApproveList));
+            }
         }
 
     }
