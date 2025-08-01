@@ -121,7 +121,7 @@ The Employee Management System (EMS) is built with **ASP.NET Core (.NET 8)** usi
 
 ### ER Diagram :
 
-![Final ER diagram For EMS.png](attachment:19002233-75e0-4c0f-868d-43e2a4656b44:Final_ER_diagram_For_EMS.png)
+attachment:19002233-75e0-4c0f-868d-43e2a4656b44:Final_ER_diagram_For_EMS.png)
 
 ---
 
