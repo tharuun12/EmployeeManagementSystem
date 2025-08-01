@@ -184,7 +184,7 @@ namespace EMS.Tests.Controller
             var result = await controller.ForgotPassword(model);
 
             var redirect = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal("ForgotPasswordConfirmation", redirect.ActionName);
+            Assert.Equal("ForgotPasswordNotFound", redirect.ActionName);
         }
 
         [Fact]
