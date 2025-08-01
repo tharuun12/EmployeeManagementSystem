@@ -21,7 +21,7 @@
                         <td>@emp.Email</td>
                         <td>
                             <a asp-action="LoginHistory" asp-route-userId="@emp.Email" class="btn btn-sm btn-primary">Login History</a>
-                            <a asp-action="RecentActivity" asp-route-userId="@emp.Email" class="btn btn-sm btn-secondary">Recent Activity</a>
+                            @* <a asp-action="RecentActivity" asp-route-userId="@emp.Email" class="btn btn-sm btn-secondary">Recent Activity</a> *@
                         </td>
                     </tr>
                 }
